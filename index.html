@@ -1,0 +1,1921 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>🎉 Chúc Mừng Sinh Nhật! 🎂</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: 
+                radial-gradient(ellipse at top left, rgba(255,0,128,0.3) 0%, transparent 50%),
+                radial-gradient(ellipse at top right, rgba(0,128,255,0.3) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom left, rgba(128,0,255,0.3) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom right, rgba(255,128,0,0.3) 0%, transparent 50%),
+                linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #533483 100%);
+            background-size: 400% 400%, 400% 400%, 400% 400%, 400% 400%, 100% 100%;
+            animation: gradientShift 8s ease infinite;
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(255,255,255,0.1) 0%, transparent 30%),
+                radial-gradient(circle at 80% 20%, rgba(255,0,255,0.08) 0%, transparent 40%),
+                radial-gradient(circle at 60% 80%, rgba(0,255,255,0.08) 0%, transparent 35%),
+                radial-gradient(circle at 30% 70%, rgba(255,255,0,0.06) 0%, transparent 30%);
+            backdrop-filter: blur(0.5px);
+            animation: shimmer 6s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                repeating-conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(255,255,255,0.02) 1deg, transparent 2deg),
+                repeating-linear-gradient(45deg, transparent 0px, rgba(255,255,255,0.01) 1px, transparent 2px);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes backgroundPulse {
+            0% { filter: brightness(1) saturate(1); }
+            100% { filter: brightness(1.2) saturate(1.3); }
+        }
+
+        @keyframes shimmer {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes gradientShift {
+            0% { 
+                background-position: 0% 50%; 
+                filter: brightness(1) saturate(1);
+            }
+            33% { 
+                background-position: 50% 30%; 
+                filter: brightness(1.1) saturate(1.1);
+            }
+            66% { 
+                background-position: 100% 70%; 
+                filter: brightness(0.95) saturate(1.05);
+            }
+            100% { 
+                background-position: 0% 50%; 
+                filter: brightness(1) saturate(1);
+            }
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2;
+            backdrop-filter: blur(1px);
+        }
+
+        .main-content {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 60px 40px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                0 4px 16px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 3;
+            animation: floatGently 4s ease-in-out infinite;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .main-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 30px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.02) 100%);
+            pointer-events: none;
+        }
+
+        @keyframes floatGently {
+            0%, 100% { 
+                transform: translateY(0px) rotate(0deg);
+            }
+            50% { 
+                transform: translateY(-8px) rotate(0.5deg);
+            }
+        }
+
+        .birthday-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+            text-align: center;
+            margin-bottom: 40px;
+            background: linear-gradient(135deg, 
+                #ffffff 0%, 
+                #ffd700 15%, 
+                #ff69b4 30%, 
+                #00bfff 45%, 
+                #9370db 60%, 
+                #ff1493 75%, 
+                #ffffff 100%);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 
+                0 0 30px rgba(255, 255, 255, 0.5),
+                0 0 60px rgba(255, 105, 180, 0.3);
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+            animation: 
+                gentleBounce 3s ease-in-out infinite,
+                shimmerText 4s ease-in-out infinite;
+            position: relative;
+        }
+
+        @keyframes gentleBounce {
+            0%, 100% { 
+                transform: translateY(0px) scale(1);
+            }
+            50% { 
+                transform: translateY(-5px) scale(1.02);
+            }
+        }
+
+        @keyframes shimmerText {
+            0% { 
+                background-position: 0% 50%;
+                text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+            }
+            50% { 
+                background-position: 100% 50%;
+                text-shadow: 0 0 40px rgba(255, 105, 180, 0.6);
+            }
+            100% { 
+                background-position: 0% 50%;
+                text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+            }
+        }
+
+        @keyframes neonGlow {
+            0% {
+                text-shadow: 
+                    0 0 10px #ff0080,
+                    0 0 20px #ff0080,
+                    0 0 30px #ff0080,
+                    3px 3px 6px rgba(0,0,0,0.8);
+            }
+            100% {
+                text-shadow: 
+                    0 0 20px #0080ff,
+                    0 0 30px #0080ff,
+                    0 0 40px #0080ff,
+                    0 0 50px #0080ff,
+                    3px 3px 10px rgba(0,0,0,0.8);
+            }
+        }
+
+        @keyframes rainbowText {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes bounce {
+            0% { transform: translateY(0px); }
+            100% { transform: translateY(-20px); }
+        }
+
+        .slideshow-container {
+            position: relative;
+            width: 450px;
+            height: 320px;
+            border-radius: 24px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 
+                0 12px 40px rgba(0, 0, 0, 0.25),
+                0 4px 12px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.15),
+                0 0 0 1px rgba(255, 255, 255, 0.05);
+            animation: float 6s ease-in-out infinite, gentleGlow 4s ease-in-out infinite alternate;
+            transform-style: preserve-3d;
+            margin: 30px auto;
+            display: block;
+            flex-shrink: 0;
+            min-height: 200px;
+        }
+
+        .slideshow-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 20%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 70% 80%, rgba(255,255,255,0.08) 0%, transparent 50%);
+            border-radius: 24px;
+            pointer-events: none;
+        }
+
+        @keyframes gentleGlow {
+            0% {
+                box-shadow: 
+                    0 12px 40px rgba(0, 0, 0, 0.25),
+                    0 4px 12px rgba(0, 0, 0, 0.15),
+                    0 0 20px rgba(255, 255, 255, 0.1);
+            }
+            100% {
+                box-shadow: 
+                    0 16px 50px rgba(0, 0, 0, 0.3),
+                    0 6px 16px rgba(0, 0, 0, 0.2),
+                    0 0 30px rgba(255, 255, 255, 0.15);
+            }
+        }
+
+        .slideshow-container::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            background: linear-gradient(45deg, #ff0080, #0080ff, #8000ff, #ff8000, #00ff80, #ff0040);
+            background-size: 400% 400%;
+            animation: rainbowBorder 3s linear infinite;
+            border-radius: 20px;
+            z-index: -1;
+        }
+
+        @keyframes glowPulse {
+            0% {
+                box-shadow: 
+                    0 0 20px rgba(255,0,128,0.5),
+                    0 0 40px rgba(0,128,255,0.3),
+                    0 15px 35px rgba(0,0,0,0.3);
+            }
+            100% {
+                box-shadow: 
+                    0 0 30px rgba(255,0,128,0.8),
+                    0 0 60px rgba(0,128,255,0.6),
+                    0 20px 50px rgba(0,0,0,0.4);
+            }
+        }
+
+        @keyframes rainbowBorder {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes float {
+            0%, 100% { 
+                transform: translateY(0px) rotateX(0deg) rotateY(0deg); 
+            }
+            33% { 
+                transform: translateY(-10px) rotateX(5deg) rotateY(2deg); 
+            }
+            66% { 
+                transform: translateY(-5px) rotateX(-3deg) rotateY(-2deg); 
+            }
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .slide.active {
+            opacity: 1;
+        }
+
+        .slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            min-height: 200px;
+            display: block;
+        }
+
+        /* Ensure images load properly on mobile */
+        @media (max-width: 480px) {
+            .slide img {
+                min-height: 200px !important;
+                max-width: 100% !important;
+                height: auto !important;
+                object-fit: contain !important;
+            }
+        }
+
+        .birthday-message {
+            margin-top: 40px;
+            font-size: 1.3rem;
+            font-weight: 500;
+            line-height: 1.6;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow: 
+                0 2px 4px rgba(0, 0, 0, 0.3),
+                0 0 20px rgba(255, 255, 255, 0.2);
+            animation: gentlePulse 4s ease-in-out infinite;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(8px);
+            border-radius: 16px;
+            padding: 20px 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .birthday-message::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(255, 255, 255, 0.1) 50%, 
+                transparent 100%);
+            animation: messageShine 3s ease-in-out infinite;
+        }
+
+        @keyframes gentlePulse {
+            0%, 100% { 
+                transform: scale(1);
+                opacity: 0.9;
+            }
+            50% { 
+                transform: scale(1.02);
+                opacity: 1;
+            }
+        }
+
+        @keyframes messageShine {
+            0% { left: -100%; }
+            50% { left: 100%; }
+            100% { left: 100%; }
+        }
+
+        @keyframes messageGlow {
+            0% {
+                background-position: 0% 50%;
+                text-shadow: 
+                    0 0 10px rgba(255,255,255,0.8),
+                    0 0 20px rgba(255,0,128,0.6);
+            }
+            100% {
+                background-position: 100% 50%;
+                text-shadow: 
+                    0 0 15px rgba(255,255,255,1),
+                    0 0 30px rgba(0,128,255,0.8);
+            }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Canvas cho pháo hoa */
+        #fireworksCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            mix-blend-mode: screen;
+        }
+
+        /* Holographic overlay */
+        .holographic-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(45deg, transparent 30%, rgba(255,0,255,0.1) 50%, transparent 70%),
+                linear-gradient(-45deg, transparent 30%, rgba(0,255,255,0.1) 50%, transparent 70%);
+            background-size: 200px 200px, 150px 150px;
+            animation: holographicShift 10s linear infinite;
+            pointer-events: none;
+            z-index: 4;
+            mix-blend-mode: overlay;
+        }
+
+        @keyframes holographicShift {
+            0% {
+                background-position: 0% 0%, 100% 100%;
+                opacity: 0.3;
+            }
+            50% {
+                background-position: 100% 100%, 0% 0%;
+                opacity: 0.6;
+            }
+            100% {
+                background-position: 0% 0%, 100% 100%;
+                opacity: 0.3;
+            }
+        }
+
+        /* Depth layers */
+        .depth-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .depth-layer-1 {
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(255,255,255,0.05) 0%, transparent 40%),
+                radial-gradient(circle at 80% 60%, rgba(255,0,128,0.03) 0%, transparent 50%);
+            animation: depthFloat1 12s ease-in-out infinite;
+            z-index: 2;
+        }
+
+        .depth-layer-2 {
+            background: 
+                radial-gradient(circle at 60% 80%, rgba(0,255,255,0.04) 0%, transparent 45%),
+                radial-gradient(circle at 30% 40%, rgba(255,255,0,0.02) 0%, transparent 35%);
+            animation: depthFloat2 15s ease-in-out infinite reverse;
+            z-index: 3;
+        }
+
+        @keyframes depthFloat1 {
+            0%, 100% { transform: translateY(0px) translateX(0px) scale(1); }
+            33% { transform: translateY(-20px) translateX(10px) scale(1.02); }
+            66% { transform: translateY(10px) translateX(-15px) scale(0.98); }
+        }
+
+        @keyframes depthFloat2 {
+            0%, 100% { transform: translateY(0px) translateX(0px) scale(1); }
+            50% { transform: translateY(-15px) translateX(8px) scale(1.01); }
+        }
+
+        /* Hiệu ứng confetti */
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ff6b6b;
+            animation: confetti-fall 3s linear infinite;
+        }
+
+        .confetti:nth-child(2n) { background: #4ecdc4; }
+        .confetti:nth-child(3n) { background: #45b7d1; }
+        .confetti:nth-child(4n) { background: #96ceb4; }
+        .confetti:nth-child(5n) { background: #feca57; }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Balloons */
+        .balloon {
+            position: absolute;
+            bottom: -100px;
+            width: 60px;
+            height: 80px;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            animation: balloon-float 8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 70%);
+            backdrop-filter: blur(2px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .balloon:before {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 50px;
+            background: #333;
+        }
+
+        .balloon:nth-child(1) { 
+            background: linear-gradient(45deg, #ff0080, #ff4080); 
+            left: 10%; 
+            animation: balloon-float 6s ease-in-out infinite, balloonGlow 2s ease-in-out infinite alternate;
+            animation-delay: 0s;
+            box-shadow: 0 0 20px rgba(255,0,128,0.6);
+        }
+        .balloon:nth-child(2) { 
+            background: linear-gradient(45deg, #0080ff, #4080ff); 
+            left: 20%; 
+            animation: balloon-float 6s ease-in-out infinite, balloonGlow 2s ease-in-out infinite alternate;
+            animation-delay: 1s;
+            box-shadow: 0 0 20px rgba(0,128,255,0.6);
+        }
+        .balloon:nth-child(3) { 
+            background: linear-gradient(45deg, #8000ff, #a040ff); 
+            left: 80%; 
+            animation: balloon-float 6s ease-in-out infinite, balloonGlow 2s ease-in-out infinite alternate;
+            animation-delay: 2s;
+            box-shadow: 0 0 20px rgba(128,0,255,0.6);
+        }
+        .balloon:nth-child(4) { 
+            background: linear-gradient(45deg, #ff8000, #ffa040); 
+            left: 90%; 
+            animation: balloon-float 6s ease-in-out infinite, balloonGlow 2s ease-in-out infinite alternate;
+            animation-delay: 3s;
+            box-shadow: 0 0 20px rgba(255,128,0,0.6);
+        }
+
+        @keyframes balloonGlow {
+            0% {
+                filter: brightness(1) drop-shadow(0 0 10px currentColor);
+                transform: scale(1);
+            }
+            100% {
+                filter: brightness(1.3) drop-shadow(0 0 20px currentColor);
+                transform: scale(1.05);
+            }
+        }
+
+        /* Rotating decorative elements */
+        .rotating-decoration {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            animation: rotate360 10s linear infinite;
+            z-index: 3;
+        }
+
+        .rotating-decoration::before {
+            content: '✨';
+            position: absolute;
+            font-size: 2rem;
+            animation: sparkleRotate 2s ease-in-out infinite alternate;
+            filter: drop-shadow(0 0 10px rgba(255,255,255,0.8));
+        }
+
+        @keyframes rotate360 {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes sparkleRotate {
+            0% { transform: scale(0.8) rotate(0deg); }
+            100% { transform: scale(1.2) rotate(180deg); }
+        }
+
+        @keyframes balloon-float {
+            0% { 
+                transform: translateY(0px) translateX(0px) rotate(-2deg); 
+            }
+            25% { 
+                transform: translateY(-15px) translateX(5px) rotate(1deg); 
+            }
+            50% { 
+                transform: translateY(-25px) translateX(0px) rotate(2deg); 
+            }
+            75% { 
+                transform: translateY(-15px) translateX(-5px) rotate(-1deg); 
+            }
+            100% { 
+                transform: translateY(0px) translateX(0px) rotate(-2deg); 
+            }
+        }
+
+        /* Sparkle particles */
+        .sparkle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: #fff;
+            border-radius: 50%;
+            animation: sparkleAnim 2s linear infinite;
+            box-shadow: 0 0 6px #fff, 0 0 12px #fff, 0 0 18px #fff;
+        }
+
+        .sparkle::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 2px;
+            height: 12px;
+            background: #fff;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 4px #fff;
+        }
+
+        .sparkle::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 12px;
+            height: 2px;
+            background: #fff;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 4px #fff;
+        }
+
+        @keyframes sparkleAnim {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1) rotate(180deg);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(0) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Stars particles */
+        .star {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-bottom: 7px solid #ffd700;
+            transform: rotate(35deg);
+            animation: starTwinkle 1.5s ease-in-out infinite alternate;
+        }
+
+        .star:before {
+            content: '';
+            position: absolute;
+            left: -5px;
+            top: -5px;
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-bottom: 7px solid #ffd700;
+            transform: rotate(-70deg);
+        }
+
+        .star:after {
+            content: '';
+            position: absolute;
+            left: -5px;
+            top: 3px;
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-bottom: 7px solid #ffd700;
+            transform: rotate(70deg);
+        }
+
+        @keyframes starTwinkle {
+            0% {
+                filter: brightness(1) drop-shadow(0 0 2px #ffd700);
+                transform: rotate(35deg) scale(0.8);
+            }
+            100% {
+                filter: brightness(1.5) drop-shadow(0 0 8px #ffd700);
+                transform: rotate(35deg) scale(1.2);
+            }
+        }
+
+        /* Hearts */
+        .heart {
+            position: absolute;
+            width: 20px;
+            height: 18px;
+            animation: heartFloat 3s ease-in-out infinite;
+        }
+
+        .heart::before,
+        .heart::after {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 16px;
+            background: #ff69b4;
+            border-radius: 10px 10px 0 0;
+            transform: rotate(-45deg);
+            transform-origin: 0 100%;
+            filter: drop-shadow(0 0 5px #ff69b4);
+        }
+
+        .heart::after {
+            left: 0;
+            transform: rotate(45deg);
+            transform-origin: 100% 100%;
+        }
+
+        @keyframes heartFloat {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg) scale(0.8);
+                opacity: 0.7;
+            }
+            50% {
+                transform: translateY(-20px) rotate(10deg) scale(1.1);
+                opacity: 1;
+            }
+        }
+
+        /* Tap hint styling */
+        .tap-hint {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            padding: 15px 25px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+            font-weight: 500;
+            text-align: center;
+            z-index: 1000;
+            animation: tapHintPulse 2s ease-in-out infinite, tapHintFloat 3s ease-in-out infinite;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .tap-hint::before {
+            content: '👆';
+            display: inline-block;
+            margin-right: 8px;
+            animation: tapHintBounce 1s ease-in-out infinite;
+        }
+
+        .tap-hint.hidden {
+            opacity: 0;
+            transform: translateX(-50%) translateY(20px);
+            transition: all 0.5s ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes tapHintPulse {
+            0%, 100% {
+                box-shadow: 
+                    0 8px 25px rgba(0, 0, 0, 0.3),
+                    0 0 20px rgba(255, 255, 255, 0.2);
+            }
+            50% {
+                box-shadow: 
+                    0 12px 35px rgba(0, 0, 0, 0.4),
+                    0 0 30px rgba(255, 255, 255, 0.4);
+            }
+        }
+
+        @keyframes tapHintFloat {
+            0%, 100% { transform: translateX(-50%) translateY(0px); }
+            50% { transform: translateX(-50%) translateY(-5px); }
+        }
+
+        @keyframes tapHintBounce {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.2) rotate(10deg); }
+        }
+
+        /* Explosion effect */
+        .screen-explosion {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .explosion-flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.4) 30%, transparent 70%);
+            opacity: 0;
+            animation: explosionFlash 0.3s ease-out;
+            pointer-events: none;
+            z-index: 998;
+        }
+
+        @keyframes explosionFlash {
+            0% { opacity: 0; transform: scale(0.8); }
+            30% { opacity: 1; transform: scale(1.1); }
+            100% { opacity: 0; transform: scale(1.2); }
+        }
+
+        /* Mobile First Responsive Design */
+        @media (max-width: 480px) {
+            body {
+                background-size: 300% 300%, 300% 300%, 300% 300%, 300% 300%, 100% 100%;
+            }
+
+            .main-content {
+                padding: 30px 20px;
+                margin: 10px auto;
+                border-radius: 20px;
+                backdrop-filter: blur(12px);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            /* Mobile tap hint */
+            .tap-hint {
+                bottom: 20px;
+                font-size: 0.9rem;
+                padding: 12px 20px;
+                border-radius: 40px;
+            }
+
+            .tap-hint::before {
+                content: '👆';
+                font-size: 1.2rem;
+            }
+
+            .birthday-title {
+                font-size: 2.2rem;
+                margin-bottom: 25px;
+                line-height: 1.2;
+                letter-spacing: -0.01em;
+            }
+            
+            .slideshow-container {
+                width: calc(100vw - 40px);
+                max-width: 320px;
+                height: 240px;
+                margin: 20px auto;
+                border-radius: 16px;
+                align-self: center;
+            }
+            
+            .birthday-message {
+                font-size: 1.1rem;
+                margin-top: 25px;
+                padding: 15px 20px;
+                border-radius: 12px;
+                line-height: 1.5;
+            }
+
+            /* Mobile balloon optimization */
+            .balloon {
+                width: 45px;
+                height: 60px;
+            }
+
+            .balloon:nth-child(1) { left: 5%; }
+            .balloon:nth-child(2) { left: 15%; }
+            .balloon:nth-child(3) { left: 85%; }
+            .balloon:nth-child(4) { left: 95%; }
+
+            /* Reduce rotating decorations on mobile */
+            .rotating-decoration {
+                width: 60px;
+                height: 60px;
+            }
+
+            .rotating-decoration::before {
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (min-width: 481px) and (max-width: 768px) {
+            .birthday-title {
+                font-size: 2.8rem;
+            }
+            
+            .slideshow-container {
+                width: 85%;
+                max-width: 380px;
+                height: 280px;
+                margin: 20px auto;
+            }
+            
+            .birthday-message {
+                font-size: 1.25rem;
+                padding: 18px 25px;
+            }
+
+            .main-content {
+                padding: 45px 35px;
+                margin: 15px auto;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .birthday-title {
+                font-size: 3.2rem;
+            }
+            
+            .slideshow-container {
+                width: 420px;
+                height: 300px;
+                margin: 30px auto;
+            }
+
+            .main-content {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+        }
+
+        /* Landscape mobile optimization */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .main-content {
+                padding: 15px 20px !important;
+                transform: scale(0.8) !important;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                max-height: 90vh !important;
+                overflow-y: auto !important;
+            }
+
+            .birthday-title {
+                font-size: 1.5rem !important;
+                margin-bottom: 10px !important;
+            }
+
+            .slideshow-container {
+                width: 250px !important;
+                height: 160px !important;
+                min-height: 160px !important;
+                margin: 10px auto !important;
+                flex-shrink: 0 !important;
+            }
+
+            .slide img {
+                min-height: 160px !important;
+            }
+
+            .birthday-message {
+                font-size: 0.9rem !important;
+                margin-top: 10px !important;
+                padding: 8px 15px !important;
+            }
+
+            /* Reduce effects in landscape */
+            .balloon {
+                display: none;
+            }
+
+            .rotating-decoration {
+                opacity: 0.3;
+                animation-duration: 30s;
+            }
+        }
+
+        /* Very short landscape screens */
+        @media (max-height: 350px) and (orientation: landscape) {
+            .main-content {
+                transform: scale(0.7) !important;
+                padding: 10px 15px !important;
+            }
+
+            .slideshow-container {
+                width: 200px !important;
+                height: 120px !important;
+                min-height: 120px !important;
+            }
+
+            .slide img {
+                min-height: 120px !important;
+            }
+
+            .birthday-title {
+                font-size: 1.2rem !important;
+                margin-bottom: 5px !important;
+            }
+
+            /* Tap hint in landscape */
+            .tap-hint {
+                bottom: 10px !important;
+                font-size: 0.8rem !important;
+                padding: 8px 15px !important;
+                transform: translateX(-50%) scale(0.8) !important;
+            }
+        }
+
+        /* Ultra small screens */
+        @media (max-width: 320px) {
+            .birthday-title {
+                font-size: 1.8rem;
+            }
+
+            .slideshow-container {
+                width: calc(100vw - 30px) !important;
+                max-width: 280px !important;
+                height: 200px !important;
+                min-height: 200px !important;
+                margin: 15px auto !important;
+                flex-shrink: 0;
+            }
+
+            .main-content {
+                padding: 25px 15px;
+                margin: 5px auto;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                max-height: none !important;
+                overflow: visible !important;
+            }
+
+            .birthday-message {
+                font-size: 1rem;
+                padding: 12px 15px;
+            }
+
+            /* Ensure slides are properly sized */
+            .slide {
+                min-height: 200px !important;
+            }
+
+            .slide img {
+                object-fit: cover !important;
+                object-position: center !important;
+                min-height: 200px !important;
+            }
+        }
+
+        /* Extra small screens and very short screens */
+        @media (max-width: 280px), (max-height: 400px) {
+            .slideshow-container {
+                width: calc(100vw - 20px) !important;
+                min-width: 200px !important;
+                height: 150px !important;
+                min-height: 150px !important;
+                margin: 10px auto !important;
+            }
+
+            .slide img {
+                min-height: 150px !important;
+            }
+
+            .birthday-title {
+                font-size: 1.5rem !important;
+                margin-bottom: 15px !important;
+            }
+
+            .main-content {
+                padding: 15px 10px !important;
+                margin: 2px auto !important;
+            }
+        }
+
+        /* Touch-friendly improvements */
+        @media (hover: none) and (pointer: coarse) {
+            /* Ensure slideshow is visible on small screens */
+            .slideshow-container {
+                min-height: 200px !important; /* Ensure minimum visible height */
+                min-width: 250px !important; /* Ensure minimum visible width */
+            }
+
+            /* Prevent zoom on double tap */
+            * {
+                touch-action: manipulation;
+            }
+
+            /* Reduce motion for battery */
+            .rotating-decoration {
+                animation-duration: 20s;
+            }
+
+            /* Optimize backdrop-filter for mobile */
+            .main-content {
+                backdrop-filter: blur(8px);
+            }
+
+            .slideshow-container {
+                backdrop-filter: blur(8px);
+            }
+
+            /* Reduce shadow complexity on mobile */
+            .main-content {
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            }
+
+            .slideshow-container {
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            }
+        }
+
+        /* Dark mode support for mobile */
+        @media (prefers-color-scheme: dark) {
+            .main-content {
+                background: rgba(0, 0, 0, 0.2);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .slideshow-container {
+                background: rgba(0, 0, 0, 0.15);
+            }
+        }
+
+        /* Reduced motion preferences */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+            
+            .rotating-decoration,
+            .sparkle,
+            .star,
+            .heart,
+            .confetti {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="fireworksCanvas"></canvas>
+    
+    <!-- Depth layers for visual enhancement -->
+    <div class="depth-layer depth-layer-1"></div>
+    <div class="depth-layer depth-layer-2"></div>
+    <div class="holographic-overlay"></div>
+    
+    <div class="container">
+        <div class="main-content">
+            <h1 class="birthday-title">🎉 CHÚC MỪNG SINH NHẬT EM! 🎂</h1>
+            
+            <div class="slideshow-container" id="slideshow">
+                <!-- Slides sẽ được tạo bởi JavaScript -->
+            </div>
+            
+            <div class="birthday-message">
+                🎈 Chúc em có một ngày sinh nhật thật vui vẻ và hạnh phúc! 🎈
+            </div>
+        </div>
+    </div>
+
+    <!-- Balloons -->
+    <div class="balloon"></div>
+    <div class="balloon"></div>
+    <div class="balloon"></div>
+    <div class="balloon"></div>
+
+    <!-- Rotating decorations -->
+    <div class="rotating-decoration" style="top: 10%; left: 5%;"></div>
+    <div class="rotating-decoration" style="top: 15%; right: 8%; animation-direction: reverse;"></div>
+    <div class="rotating-decoration" style="bottom: 20%; left: 3%; animation-duration: 15s;"></div>
+    <div class="rotating-decoration" style="bottom: 25%; right: 5%; animation-direction: reverse; animation-duration: 8s;"></div>
+
+    <!-- Tap hint -->
+    <div class="tap-hint" id="tapHint">
+        Chạm vào màn hình để pháo hoa! ✨
+    </div>
+
+    <script>
+        // Tự động phát hiện ảnh trong thư mục Image
+        let images = [];
+        let currentSlide = 0;
+
+        // Danh sách các định dạng ảnh được hỗ trợ
+        const supportedFormats = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
+
+        // Danh sách tên file có thể có trong thư mục (để thử tải)
+        const possibleImages = [
+            'beauty_1677765546034.JPG',
+            'CD08DB3E-872C-45AF-8416-7F1616DF297F.JPG',
+            'IMG_0023.JPG',
+            'IMG_0428.JPG',
+            'IMG_0540.JPG',
+            'IMG_0766.JPG',
+            'IMG_1392.JPG',
+            'IMG_1427.JPG',
+            'IMG_20211212_092432.jpg',
+            'IMG_20220109_202305_516.webp',
+            'IMG_2299.JPG',
+            'IMG_3820.JPG',
+            'IMG_3822.JPG',
+            'IMG_3855.JPG',
+            'IMG_3885.JPG',
+            'IMG_4010.JPG',
+            'IMG_5288.JPG',
+            'IMG_6890.JPG',
+            'IMG_7340.JPG',
+            'IMG_9077.JPG',
+            'IMG_9799.JPG',
+            'received_345382977611525.jpeg'
+        ];
+
+        // Hàm kiểm tra file ảnh có tồn tại không
+        function checkImageExists(imagePath) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => resolve(true);
+                img.onerror = () => resolve(false);
+                img.src = imagePath;
+            });
+        }
+
+        // Hàm tự động phát hiện ảnh có sẵn
+        async function detectAvailableImages() {
+            const availableImages = [];
+            
+            // Kiểm tra từng ảnh có thể có
+            for (const imageName of possibleImages) {
+                const imagePath = `Image/${imageName}`;
+                const exists = await checkImageExists(imagePath);
+                if (exists) {
+                    availableImages.push(imagePath);
+                    console.log(`Tìm thấy ảnh: ${imagePath}`);
+                }
+            }
+
+            // Nếu không tìm thấy ảnh nào, thử một số pattern phổ biến
+            if (availableImages.length === 0) {
+                console.log('Không tìm thấy ảnh trong danh sách, thử tìm pattern khác...');
+                
+                // Thử một số pattern tên file phổ biến
+                const commonPatterns = [
+                    // Pattern IMG_xxxx
+                    ...Array.from({length: 100}, (_, i) => `IMG_${String(i).padStart(4, '0')}`),
+                    // Pattern image1, image2, etc.
+                    ...Array.from({length: 20}, (_, i) => `image${i + 1}`),
+                    ...Array.from({length: 20}, (_, i) => `photo${i + 1}`),
+                    // Pattern DSC_xxxx (máy ảnh Nikon)
+                    ...Array.from({length: 50}, (_, i) => `DSC_${String(i).padStart(4, '0')}`),
+                ];
+
+                for (const pattern of commonPatterns) {
+                    for (const ext of supportedFormats) {
+                        const imagePath = `Image/${pattern}.${ext}`;
+                        const exists = await checkImageExists(imagePath);
+                        if (exists) {
+                            availableImages.push(imagePath);
+                            console.log(`Tìm thấy ảnh: ${imagePath}`);
+                        }
+                        if (availableImages.length >= 50) break; // Giới hạn để tránh quá nhiều
+                    }
+                    if (availableImages.length >= 50) break;
+                }
+            }
+
+            return availableImages;
+        }
+
+        // Tạo slideshow
+        function createSlideshow() {
+            const slideshowContainer = document.getElementById('slideshow');
+            
+            if (images.length === 0) {
+                // Hiển thị thông báo nếu không có ảnh
+                const noImageSlide = document.createElement('div');
+                noImageSlide.className = 'slide active';
+                noImageSlide.innerHTML = `
+                    <div style="display: flex; justify-content: center; align-items: center; height: 100%; 
+                               background: linear-gradient(45deg, #ff6b6b, #4ecdc4); color: white; 
+                               font-size: 1.2rem; text-align: center; padding: 20px;">
+                        <div>
+                            <div style="font-size: 3rem; margin-bottom: 10px;">🖼️</div>
+                            <div>Đang tìm ảnh trong thư mục Image...</div>
+                            <div style="font-size: 0.9rem; margin-top: 10px; opacity: 0.8;">
+                                Hãy thêm ảnh vào thư mục Image và refresh trang!
+                            </div>
+                        </div>
+                    </div>
+                `;
+                slideshowContainer.appendChild(noImageSlide);
+                return;
+            }
+            
+            images.forEach((imagePath, index) => {
+                const slide = document.createElement('div');
+                slide.className = 'slide';
+                if (index === 0) slide.classList.add('active');
+                
+                const img = document.createElement('img');
+                img.src = imagePath;
+                img.alt = `Ảnh sinh nhật ${index + 1}`;
+                img.onerror = function() {
+                    console.log(`Không thể tải ảnh: ${imagePath}`);
+                    // Ẩn slide nếu không load được ảnh
+                    slide.style.display = 'none';
+                };
+                
+                slide.appendChild(img);
+                slideshowContainer.appendChild(slide);
+            });
+
+            console.log(`Đã tạo slideshow với ${images.length} ảnh`);
+        }
+
+        // Chuyển slide
+        function nextSlide() {
+            const slides = document.querySelectorAll('.slide');
+            slides[currentSlide].classList.remove('active');
+            
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }
+
+        // Pháo hoa Canvas
+        class Firework {
+            constructor(canvas, ctx) {
+                this.canvas = canvas;
+                this.ctx = ctx;
+                this.particles = [];
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height * 0.5 + canvas.height * 0.1;
+                this.colors = ['#ff0080', '#0080ff', '#8000ff', '#ff8000', '#00ff80', '#ff0040', '#4000ff', '#ff4080', '#8040ff', '#40ff80', '#ffd700', '#ff69b4', '#00ffff', '#ff1493'];
+                
+                // Mobile-optimized particle count
+                const isMobile = window.innerWidth <= 768;
+                const baseParticles = isMobile ? 20 : 40;
+                const extraParticles = isMobile ? 10 : 20;
+                const particleCount = Math.random() * extraParticles + baseParticles;
+                
+                for (let i = 0; i < particleCount; i++) {
+                    this.particles.push({
+                        x: this.x,
+                        y: this.y,
+                        vx: (Math.random() - 0.5) * 8,
+                        vy: (Math.random() - 0.5) * 8,
+                        color: this.colors[Math.floor(Math.random() * this.colors.length)],
+                        life: 1,
+                        decay: Math.random() * 0.02 + 0.01
+                    });
+                }
+            }
+
+            update() {
+                this.particles.forEach(particle => {
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+                    particle.vy += 0.1; // gravity
+                    particle.life -= particle.decay;
+                });
+                
+                this.particles = this.particles.filter(p => p.life > 0);
+                return this.particles.length > 0;
+            }
+
+            draw() {
+                this.particles.forEach(particle => {
+                    this.ctx.save();
+                    this.ctx.globalAlpha = particle.life;
+                    this.ctx.fillStyle = particle.color;
+                    this.ctx.beginPath();
+                    this.ctx.arc(particle.x, particle.y, 3, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    this.ctx.restore();
+                });
+            }
+        }
+
+        // Quản lý pháo hoa
+        let fireworks = [];
+        const canvas = document.getElementById('fireworksCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function createFirework() {
+            fireworks.push(new Firework(canvas, ctx));
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Update và draw fireworks
+            fireworks = fireworks.filter(firework => {
+                firework.update();
+                firework.draw();
+                return firework.particles.length > 0;
+            });
+            
+            requestAnimationFrame(animate);
+        }
+
+        // Mobile-optimized particle functions
+        const isMobile = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+        // Tạo confetti với tối ưu mobile và battery
+        function createConfetti() {
+            if (prefersReducedMotion) return;
+            let count = isMobile ? 25 : 50;
+            count = Math.floor(count * particleReductionFactor);
+            for (let i = 0; i < count; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => {
+                    if (confetti.parentNode) confetti.remove();
+                }, 5000);
+            }
+        }
+
+        // Tạo sparkles với tối ưu mobile và battery
+        function createSparkles() {
+            if (prefersReducedMotion) return;
+            let count = isMobile ? 8 : 15;
+            count = Math.floor(count * particleReductionFactor);
+            for (let i = 0; i < count; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                sparkle.style.left = Math.random() * 100 + 'vw';
+                sparkle.style.top = Math.random() * 100 + 'vh';
+                sparkle.style.animationDelay = Math.random() * 2 + 's';
+                sparkle.style.animationDuration = (Math.random() * 1 + 1.5) + 's';
+                document.body.appendChild(sparkle);
+                
+                setTimeout(() => {
+                    if (sparkle.parentNode) sparkle.remove();
+                }, 3000);
+            }
+        }
+
+        // Tạo stars với tối ưu mobile
+        function createStars() {
+            const count = isMobile ? 5 : 10;
+            for (let i = 0; i < count; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + 'vw';
+                star.style.top = Math.random() * 100 + 'vh';
+                star.style.animationDelay = Math.random() * 2 + 's';
+                document.body.appendChild(star);
+                
+                setTimeout(() => {
+                    if (star.parentNode) star.remove();
+                }, 4000);
+            }
+        }
+
+        // Tạo hearts với tối ưu mobile
+        function createHearts() {
+            const count = isMobile ? 4 : 8;
+            for (let i = 0; i < count; i++) {
+                const heart = document.createElement('div');
+                heart.className = 'heart';
+                heart.style.left = Math.random() * 100 + 'vw';
+                heart.style.top = Math.random() * 100 + 'vh';
+                heart.style.animationDelay = Math.random() * 3 + 's';
+                document.body.appendChild(heart);
+                
+                setTimeout(() => {
+                    if (heart.parentNode) heart.remove();
+                }, 5000);
+            }
+        }
+
+        // Battery and performance monitoring
+        let isLowPowerMode = false;
+        let particleReductionFactor = 1;
+
+        // Check for reduced motion preference
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        
+        // Check battery status if available
+        if ('getBattery' in navigator) {
+            navigator.getBattery().then(function(battery) {
+                if (battery.level < 0.2 || !battery.charging) {
+                    isLowPowerMode = true;
+                    particleReductionFactor = 0.5;
+                    console.log('Low power mode detected, reducing effects');
+                }
+            });
+        }
+
+        // Visibility change optimization
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                // Pause heavy animations when tab is not visible
+                document.body.style.animationPlayState = 'paused';
+            } else {
+                document.body.style.animationPlayState = 'running';
+            }
+        });
+
+        // Khởi tạo
+        window.addEventListener('load', async function() {
+            resizeCanvas();
+            
+            // Hiển thị loading message
+            console.log('Đang tìm kiếm ảnh trong thư mục Image...');
+            
+            // Tự động phát hiện ảnh có sẵn
+            images = await detectAvailableImages();
+            
+            if (images.length > 0) {
+                console.log(`Tìm thấy ${images.length} ảnh`);
+            } else {
+                console.log('Không tìm thấy ảnh nào trong thư mục Image');
+            }
+            
+            // Tạo slideshow với ảnh đã tìm thấy
+            createSlideshow();
+            
+            // Chỉ bắt đầu slideshow nếu có ảnh
+            if (images.length > 1) {
+                setInterval(nextSlide, 3000);
+            }
+            
+            // Bắt đầu animation pháo hoa
+            animate();
+            
+            // Mobile performance optimization
+            const isMobile = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            // Adjust firework frequency based on device
+            const fireworkInterval = isMobile ? 1200 : 600;
+            setInterval(createFirework, fireworkInterval);
+            
+            // Orchestrated entrance sequence
+            const entranceSequence = async () => {
+                // Phase 1: Gentle start
+                await new Promise(resolve => setTimeout(resolve, 500));
+                createSparkles();
+                
+                // Phase 2: Build up
+                await new Promise(resolve => setTimeout(resolve, 800));
+                createConfetti();
+                createStars();
+                
+                // Phase 3: Full celebration
+                await new Promise(resolve => setTimeout(resolve, 1200));
+                createHearts();
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(createFirework, i * 400);
+                }
+            };
+            
+            entranceSequence();
+            
+            // Mobile-optimized intervals
+            const confettiInterval = isMobile ? 8000 : 6000;
+            const sparkleInterval = isMobile ? 4000 : 2500;
+            const starInterval = isMobile ? 6000 : 4000;
+            const heartInterval = isMobile ? 10000 : 7000;
+
+            // Orchestrated continuous effects with varied timing
+            setInterval(() => {
+                createConfetti();
+                // Add subtle screen shake effect (disabled on mobile to save battery)
+                if (!isMobile) {
+                    document.body.style.animation = 'subtleShake 0.1s ease-out';
+                    setTimeout(() => {
+                        document.body.style.animation = '';
+                    }, 100);
+                }
+            }, confettiInterval);
+            
+            setInterval(createSparkles, sparkleInterval);
+            setInterval(createStars, starInterval);
+            setInterval(createHearts, heartInterval);
+
+            // Add subtle screen shake animation
+            const shakeCSS = `
+                @keyframes subtleShake {
+                    0%, 100% { transform: translateX(0); }
+                    25% { transform: translateX(-1px); }
+                    75% { transform: translateX(1px); }
+                }
+            `;
+            const shakeStyle = document.createElement('style');
+            shakeStyle.textContent = shakeCSS;
+            document.head.appendChild(shakeStyle);
+        });
+
+        window.addEventListener('resize', resizeCanvas);
+
+        // Tap hint management
+        let tapCount = 0;
+        const tapHint = document.getElementById('tapHint');
+        
+        function hideTapHint() {
+            if (tapHint) {
+                tapHint.classList.add('hidden');
+                setTimeout(() => {
+                    if (tapHint.parentNode) tapHint.remove();
+                }, 500);
+            }
+        }
+
+        // Multi-firework explosion effect
+        function createExplosion(centerX, centerY) {
+            // Hide tap hint after first interaction
+            if (tapCount === 0) {
+                hideTapHint();
+            }
+            tapCount++;
+
+            // Create explosion flash
+            const flash = document.createElement('div');
+            flash.className = 'explosion-flash';
+            document.body.appendChild(flash);
+            setTimeout(() => {
+                if (flash.parentNode) flash.remove();
+            }, 300);
+
+            // Create multiple fireworks around the tap point
+            const explosionCount = isMobile ? 5 : 8;
+            for (let i = 0; i < explosionCount; i++) {
+                setTimeout(() => {
+                    const angle = (Math.PI * 2 * i) / explosionCount;
+                    const distance = Math.random() * 150 + 50;
+                    const fx = centerX + Math.cos(angle) * distance;
+                    const fy = centerY + Math.sin(angle) * distance;
+                    
+                    // Ensure fireworks stay within screen bounds
+                    const safeX = Math.max(50, Math.min(window.innerWidth - 50, fx));
+                    const safeY = Math.max(50, Math.min(window.innerHeight - 50, fy));
+                    
+                    const firework = new Firework(canvas, ctx);
+                    firework.x = safeX;
+                    firework.y = safeY;
+                    fireworks.push(firework);
+                }, i * 100);
+            }
+
+            // Create center firework
+            const centerFirework = new Firework(canvas, ctx);
+            centerFirework.x = centerX;
+            centerFirework.y = centerY;
+            fireworks.push(centerFirework);
+        }
+
+        // Enhanced touch/click interaction with haptic-like feedback
+        function handleInteraction(x, y) {
+            // Create explosion at tap point
+            createExplosion(x, y);
+            
+            // Visual haptic feedback - bigger on mobile
+            const rippleSize = isMobile ? 100 : 70;
+            const ripple = document.createElement('div');
+            ripple.style.position = 'fixed';
+            ripple.style.left = (x - rippleSize/2) + 'px';
+            ripple.style.top = (y - rippleSize/2) + 'px';
+            ripple.style.width = rippleSize + 'px';
+            ripple.style.height = rippleSize + 'px';
+            ripple.style.borderRadius = '50%';
+            ripple.style.background = 'radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,215,0,0.6) 40%, transparent 70%)';
+            ripple.style.pointerEvents = 'none';
+            ripple.style.zIndex = '999';
+            ripple.style.animation = 'clickRipple 0.8s ease-out forwards';
+            
+            document.body.appendChild(ripple);
+            
+            // Enhanced screen shake for explosion
+            if (!isMobile) {
+                document.body.style.animation = 'subtleShake 0.2s ease-out';
+                setTimeout(() => {
+                    document.body.style.animation = '';
+                }, 200);
+            }
+            
+            setTimeout(() => {
+                if (ripple.parentNode) ripple.remove();
+            }, 800);
+            
+            // Create massive particle burst
+            createConfetti();
+            createSparkles();
+            setTimeout(() => {
+                createStars();
+                createHearts();
+            }, 200);
+
+            // Enhanced haptic feedback simulation on mobile
+            if (isMobile && navigator.vibrate) {
+                navigator.vibrate([50, 30, 50, 30, 80]);
+            }
+        }
+
+        // Click events for desktop
+        document.addEventListener('click', function(e) {
+            handleInteraction(e.clientX, e.clientY);
+        });
+
+        // Touch events for mobile
+        document.addEventListener('touchend', function(e) {
+            if (e.changedTouches.length > 0) {
+                const touch = e.changedTouches[0];
+                handleInteraction(touch.clientX, touch.clientY);
+            }
+        });
+
+        // Add click ripple animation
+        const clickCSS = `
+            @keyframes clickRipple {
+                0% {
+                    transform: scale(0);
+                    opacity: 1;
+                }
+                100% {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        const clickStyle = document.createElement('style');
+        clickStyle.textContent = clickCSS;
+        document.head.appendChild(clickStyle);
+
+        // Interactive mouse trail
+        let mouseTrail = [];
+        let mouseX = 0;
+        let mouseY = 0;
+
+        function createMouseParticle(x, y) {
+            const particle = document.createElement('div');
+            particle.style.position = 'fixed';
+            particle.style.left = x + 'px';
+            particle.style.top = y + 'px';
+            particle.style.width = '4px';
+            particle.style.height = '4px';
+            particle.style.background = `hsl(${Math.random() * 360}, 70%, 70%)`;
+            particle.style.borderRadius = '50%';
+            particle.style.pointerEvents = 'none';
+            particle.style.zIndex = '10';
+            particle.style.boxShadow = '0 0 6px currentColor';
+            particle.style.animation = 'mouseParticleFade 1s ease-out forwards';
+            
+            document.body.appendChild(particle);
+            
+            setTimeout(() => {
+                particle.remove();
+            }, 1000);
+        }
+
+        // CSS for mouse particles
+        const mouseParticleCSS = `
+            @keyframes mouseParticleFade {
+                0% {
+                    transform: scale(1) translate(0, 0);
+                    opacity: 1;
+                }
+                100% {
+                    transform: scale(0) translate(${Math.random() * 40 - 20}px, ${Math.random() * 40 - 20}px);
+                    opacity: 0;
+                }
+            }
+        `;
+        
+        const style = document.createElement('style');
+        style.textContent = mouseParticleCSS;
+        document.head.appendChild(style);
+
+        // Touch and Mouse tracking
+        function handlePointerMove(x, y) {
+            mouseX = x;
+            mouseY = y;
+            
+            // Create trail particles occasionally (less on mobile)
+            const trailChance = isMobile ? 0.1 : 0.3;
+            if (Math.random() < trailChance) {
+                createMouseParticle(mouseX + Math.random() * 10 - 5, mouseY + Math.random() * 10 - 5);
+            }
+        }
+
+        // Mouse tracking for desktop
+        document.addEventListener('mousemove', function(e) {
+            handlePointerMove(e.clientX, e.clientY);
+        });
+
+        // Touch tracking for mobile
+        document.addEventListener('touchmove', function(e) {
+            e.preventDefault(); // Prevent scrolling
+            const touch = e.touches[0];
+            handlePointerMove(touch.clientX, touch.clientY);
+        }, { passive: false });
+
+        // Touch start for mobile tap effects
+        document.addEventListener('touchstart', function(e) {
+            const touch = e.touches[0];
+            handlePointerMove(touch.clientX, touch.clientY);
+        });
+
+        // Swipe gesture for slideshow navigation
+        let touchStartX = 0;
+        let touchStartY = 0;
+        const slideshow = document.getElementById('slideshow');
+
+        slideshow.addEventListener('touchstart', function(e) {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        });
+
+        slideshow.addEventListener('touchend', function(e) {
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = touchEndY - touchStartY;
+
+            // Check if it's a horizontal swipe (not vertical scroll)
+            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+                if (deltaX > 0) {
+                    // Swipe right - previous image (create some sparkles)
+                    createSparkles();
+                } else {
+                    // Swipe left - next image (create some hearts)
+                    createHearts();
+                }
+                // Trigger manual slide change
+                nextSlide();
+                
+                // Visual feedback for swipe
+                slideshow.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    slideshow.style.transform = '';
+                }, 100);
+            }
+        });
+
+        // Tạo pháo hoa ngẫu nhiên mạnh mẽ hơn khi trang được tải
+        setTimeout(() => {
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    createFirework();
+                }, i * 300);
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
