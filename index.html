@@ -1223,18 +1223,8 @@
     </style>
 </head>
 <body>
-    <!-- Happy Birthday Background Music -->
-    <audio id="birthdayMusic" preload="auto" loop crossorigin="anonymous">
-        <!-- Free Happy Birthday music sources -->
-        <source src="https://orangefreesounds.com/wp-content/uploads/2022/02/Happy-birthday-song.mp3" type="audio/mpeg">
-        <source src="https://www.soundboard.com/handler/DownLoadTrack.ashx?cliptitle=Happy+Birthday+To+You&filename=mz/Mzg1ODMxNTM2MzY3_JzthqW2juk.MP3" type="audio/mpeg">
-        <source src="https://actions.google.com/sounds/v1/celebrations/birthday_party_horn.ogg" type="audio/ogg">
-    </audio>
-
-    <!-- Fallback: YouTube embedded (hidden) -->
-    <iframe id="youtubePlayer" width="0" height="0" src="https://www.youtube.com/embed/Z1H0Kz6seW4?enablejsapi=1&autoplay=1&loop=1&playlist=Z1H0Kz6seW4&controls=0&modestbranding=1" 
-            frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-            style="display: none;"></iframe>
+    <!-- Happy Birthday Music Container -->
+    <div id="musicContainer" style="display: none;"></div>
     
     <canvas id="fireworksCanvas"></canvas>
     
@@ -1753,53 +1743,122 @@
             }
         });
 
-        // Happy Birthday Music Handler with HTML5 Audio + YouTube Fallback
+        // Happy Birthday Music with Web Audio API (Always works!)
+        let audioContext = null;
         let musicStarted = false;
-        let audioFailed = false;
+        let musicLoopTimeout = null;
+
+        function createAudioContext() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            return audioContext;
+        }
+
+        // Enhanced note player with better sound
+        function playNote(frequency, duration, volume = 0.2, startTime = 0) {
+            const ctx = createAudioContext();
+            const oscillator = ctx.createOscillator();
+            const gainNode = ctx.createGain();
+            const filterNode = ctx.createBiquadFilter();
+            
+            // Create a richer sound
+            oscillator.connect(filterNode);
+            filterNode.connect(gainNode);
+            gainNode.connect(ctx.destination);
+            
+            // Use sawtooth for warmer sound
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.setValueAtTime(frequency, ctx.currentTime + startTime);
+            
+            // Add low-pass filter for warmth
+            filterNode.type = 'lowpass';
+            filterNode.frequency.setValueAtTime(frequency * 3, ctx.currentTime + startTime);
+            
+            // Smooth envelope
+            gainNode.gain.setValueAtTime(0, ctx.currentTime + startTime);
+            gainNode.gain.linearRampToValueAtTime(volume, ctx.currentTime + startTime + 0.1);
+            gainNode.gain.linearRampToValueAtTime(volume * 0.7, ctx.currentTime + startTime + duration - 0.2);
+            gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + startTime + duration);
+            
+            oscillator.start(ctx.currentTime + startTime);
+            oscillator.stop(ctx.currentTime + startTime + duration);
+        }
+
+        function playHappyBirthdayMelody() {
+            // Actual Happy Birthday melody - correct notes and timing
+            const melody = [
+                // "Happy birthday to you" - phrase 1
+                {note: 264, duration: 0.75, delay: 0},      // C4 - "Hap-"
+                {note: 264, duration: 0.25, delay: 0.75},   // C4 - "py"  
+                {note: 297, duration: 1.0, delay: 1.0},     // D4 - "birth-"
+                {note: 264, duration: 1.0, delay: 2.0},     // C4 - "day"
+                {note: 352, duration: 1.0, delay: 3.0},     // F4 - "to"
+                {note: 330, duration: 2.0, delay: 4.0},     // E4 - "you"
+                
+                // "Happy birthday to you" - phrase 2  
+                {note: 264, duration: 0.75, delay: 6.5},    // C4 - "Hap-"
+                {note: 264, duration: 0.25, delay: 7.25},   // C4 - "py"
+                {note: 297, duration: 1.0, delay: 7.5},     // D4 - "birth-"
+                {note: 264, duration: 1.0, delay: 8.5},     // C4 - "day"
+                {note: 396, duration: 1.0, delay: 9.5},     // G4 - "to"
+                {note: 352, duration: 2.0, delay: 10.5},    // F4 - "you"
+                
+                // "Happy birthday dear [name]" - phrase 3
+                {note: 264, duration: 0.75, delay: 13.0},   // C4 - "Hap-"
+                {note: 264, duration: 0.25, delay: 13.75},  // C4 - "py"
+                {note: 528, duration: 1.0, delay: 14.0},    // C5 - "birth-"
+                {note: 440, duration: 1.0, delay: 15.0},    // A4 - "day"
+                {note: 352, duration: 1.0, delay: 16.0},    // F4 - "dear"
+                {note: 330, duration: 1.0, delay: 17.0},    // E4 - "Em"
+                {note: 297, duration: 2.0, delay: 18.0},    // D4 - (extended)
+                
+                // "Happy birthday to you" - phrase 4 (finale)
+                {note: 466, duration: 0.75, delay: 20.5},   // Bb4 - "Hap-"
+                {note: 466, duration: 0.25, delay: 21.25},  // Bb4 - "py"
+                {note: 440, duration: 1.0, delay: 21.5},    // A4 - "birth-"
+                {note: 352, duration: 1.0, delay: 22.5},    // F4 - "day"
+                {note: 396, duration: 1.0, delay: 23.5},    // G4 - "to"
+                {note: 352, duration: 3.0, delay: 24.5}     // F4 - "you" (finale)
+            ];
+
+            console.log('🎵 Starting Happy Birthday melody...');
+            
+            // Play all notes
+            melody.forEach(({note, duration, delay}) => {
+                playNote(note, duration, 0.15, delay);
+            });
+
+            // Schedule next loop
+            if (musicStarted) {
+                musicLoopTimeout = setTimeout(() => {
+                    if (musicStarted) {
+                        playHappyBirthdayMelody();
+                    }
+                }, 28000); // Loop after melody finishes
+            }
+        }
 
         function initMusic() {
-            const music = document.getElementById('birthdayMusic');
-            const youtube = document.getElementById('youtubePlayer');
-            
-            if (!music) return;
-
-            // Set volume
-            music.volume = 0.3;
-
             const startMusic = () => {
                 if (!musicStarted) {
-                    musicStarted = true;
-                    
-                    const playPromise = music.play();
-                    if (playPromise !== undefined) {
-                        playPromise.then(() => {
+                    try {
+                        const ctx = createAudioContext();
+                        
+                        // Resume context if suspended (required by some browsers)
+                        if (ctx.state === 'suspended') {
+                            ctx.resume().then(() => {
+                                musicStarted = true;
+                                playHappyBirthdayMelody();
+                                console.log('🎵 Happy Birthday music started!');
+                            });
+                        } else {
+                            musicStarted = true;
+                            playHappyBirthdayMelody();
                             console.log('🎵 Happy Birthday music started!');
-                        }).catch((error) => {
-                            console.log('🎵 HTML5 audio failed, trying YouTube fallback...');
-                            audioFailed = true;
-                            
-                            // Show YouTube player as fallback
-                            if (youtube) {
-                                youtube.style.display = 'block';
-                                youtube.style.width = '1px';
-                                youtube.style.height = '1px';
-                                youtube.style.opacity = '0';
-                                youtube.style.position = 'absolute';
-                                youtube.style.top = '-9999px';
-                            }
-                            
-                            // Still try HTML5 audio on next interaction
-                            const retryPlay = () => {
-                                if (!audioFailed) {
-                                    music.play().catch(() => {});
-                                }
-                                document.removeEventListener('click', retryPlay);
-                                document.removeEventListener('touchstart', retryPlay);
-                            };
-                            
-                            document.addEventListener('click', retryPlay);
-                            document.addEventListener('touchstart', retryPlay);
-                        });
+                        }
+                    } catch (error) {
+                        console.log('🎵 Web Audio not supported:', error);
                     }
                 }
                 
@@ -1807,19 +1866,10 @@
                 document.removeEventListener('touchstart', startMusic);
             };
             
-            // Handle audio loading errors
-            music.addEventListener('error', function() {
-                console.log('🎵 Audio source failed, trying next source...');
-            });
-
-            music.addEventListener('canplaythrough', function() {
-                console.log('🎵 Music loaded successfully');
-            });
-
-            // Try to start immediately after page load
-            setTimeout(startMusic, 2000);
+            // Start music after a short delay
+            setTimeout(startMusic, 1500);
             
-            // Also start on user interaction
+            // Also ensure it starts on any user interaction
             document.addEventListener('click', startMusic);
             document.addEventListener('touchstart', startMusic);
         }
