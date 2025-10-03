@@ -1764,47 +1764,54 @@
             gainNode.connect(ctx.destination);
             
             oscillator.frequency.setValueAtTime(frequency, ctx.currentTime);
-            oscillator.type = 'sine';
+            oscillator.type = 'triangle'; // Softer, warmer sound than sine
             
             gainNode.gain.setValueAtTime(0, ctx.currentTime);
-            gainNode.gain.linearRampToValueAtTime(volume, ctx.currentTime + 0.01);
-            gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + duration);
+            gainNode.gain.exponentialRampToValueAtTime(volume, ctx.currentTime + 0.1); // Smoother attack
+            gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration - 0.1); // Gentle release
             
             oscillator.start(ctx.currentTime);
             oscillator.stop(ctx.currentTime + duration);
         }
 
-        function playHappyBirthday() {
-            // Happy Birthday melody notes (simplified)
+        function playGentleMelody() {
+            // Beautiful gentle melody - "River Flows in You" inspired
             const notes = [
+                // Phrase 1 - gentle ascending
+                {freq: 220, duration: 1.0}, // A3
+                {freq: 247, duration: 0.5}, // B3
                 {freq: 262, duration: 0.5}, // C4
-                {freq: 262, duration: 0.5}, // C4  
-                {freq: 294, duration: 1.0}, // D4
-                {freq: 262, duration: 1.0}, // C4
-                {freq: 349, duration: 1.0}, // F4
-                {freq: 330, duration: 2.0}, // E4
-                
-                {freq: 262, duration: 0.5}, // C4
-                {freq: 262, duration: 0.5}, // C4
-                {freq: 294, duration: 1.0}, // D4
-                {freq: 262, duration: 1.0}, // C4
-                {freq: 392, duration: 1.0}, // G4
+                {freq: 294, duration: 1.5}, // D4
+                {freq: 330, duration: 0.5}, // E4
                 {freq: 349, duration: 2.0}, // F4
                 
+                // Phrase 2 - flowing melody
+                {freq: 330, duration: 0.5}, // E4
+                {freq: 294, duration: 0.5}, // D4
+                {freq: 262, duration: 1.0}, // C4
+                {freq: 247, duration: 0.5}, // B3
+                {freq: 220, duration: 1.0}, // A3
+                {freq: 196, duration: 1.5}, // G3
+                
+                // Phrase 3 - beautiful rise
+                {freq: 220, duration: 0.5}, // A3
                 {freq: 262, duration: 0.5}, // C4
-                {freq: 262, duration: 0.5}, // C4
-                {freq: 523, duration: 1.0}, // C5
-                {freq: 440, duration: 1.0}, // A4
-                {freq: 349, duration: 1.0}, // F4
                 {freq: 330, duration: 1.0}, // E4
-                {freq: 294, duration: 2.0}, // D4
-                
-                {freq: 466, duration: 0.5}, // Bb4
-                {freq: 466, duration: 0.5}, // Bb4
+                {freq: 392, duration: 1.5}, // G4
                 {freq: 440, duration: 1.0}, // A4
-                {freq: 349, duration: 1.0}, // F4
-                {freq: 392, duration: 1.0}, // G4
-                {freq: 349, duration: 2.0}, // F4
+                {freq: 392, duration: 1.5}, // G4
+                
+                // Phrase 4 - gentle conclusion
+                {freq: 349, duration: 0.5}, // F4
+                {freq: 330, duration: 0.5}, // E4
+                {freq: 294, duration: 1.0}, // D4
+                {freq: 262, duration: 1.5}, // C4
+                {freq: 220, duration: 2.5}, // A3 - long peaceful ending
+                
+                // Added harmonious notes for richness
+                {freq: 174, duration: 1.0}, // F3 - deeper base
+                {freq: 196, duration: 1.0}, // G3
+                {freq: 220, duration: 2.0}, // A3 - final note
             ];
             
             let noteIndex = 0;
@@ -1832,8 +1839,8 @@
                     try {
                         createAudioContext();
                         isMusicPlaying = true;
-                        playHappyBirthday();
-                        console.log('🎵 Happy Birthday music started!');
+                        playGentleMelody();
+                        console.log('🎵 Gentle melody started!');
                     } catch (error) {
                         console.log('🎵 Audio not supported');
                     }
