@@ -1581,19 +1581,16 @@
         // Danh sách các định dạng ảnh được hỗ trợ (bao gồm HEIC của Apple)
         const supportedFormats = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'heic', 'heif', 'avif', 'tiff', 'tif'];
 
-        // DANH SÁCH CHÍNH XÁC tất cả 42 ảnh thực tế trong thư mục Image
+        // DANH SÁCH CHÍNH XÁC tất cả 39 ảnh hiện tại trong thư mục Image  
         const possibleImages = [
             'beauty_1677765546034.JPG',
-            'beauty_1677765551292.JPG',
             'CD08DB3E-872C-45AF-8416-7F1616DF297F.JPG',
             'IMG20211219100556.jpg',
             'IMG_0023.JPG',
             'IMG_0428.JPG',
-            'IMG_0539.JPG',
             'IMG_0540.JPG',
             'IMG_0766.JPG',
             'IMG_1392.JPG',
-            'IMG_1427 (1).JPG',
             'IMG_1427.JPG',
             'IMG_1464.heic',
             'IMG_20211212_092432.jpg',
@@ -1628,7 +1625,7 @@
             'received_345382977611525.jpeg'
         ];
         
-        console.log(`📂 Initialized with ${possibleImages.length} known images`);
+        console.log(`📂 Initialized with ${possibleImages.length} images after cleanup`);
 
         // Kiểm tra browser có hỗ trợ HEIC không
         function checkHEICSupport() {
@@ -1831,9 +1828,9 @@
                 batchResults.forEach(result => {
                     if (result.exists) {
                         availableImages.push(result.imagePath);
-                        console.log(`✅ [${result.index + 1}/42] ${result.imageName}`);
+                        console.log(`✅ [${result.index + 1}/${possibleImages.length}] ${result.imageName}`);
                     } else {
-                        console.log(`❌ [${result.index + 1}/42] ${result.imageName} - not found`);
+                        console.log(`❌ [${result.index + 1}/${possibleImages.length}] ${result.imageName} - not found`);
                     }
                 });
                 
@@ -1873,13 +1870,13 @@
             }
             
             // Hiển thị TẤT CẢ ảnh found (không giới hạn)
-            const maxImages = 42; // Support all images in folder
+            const maxImages = 39; // Support all images in folder after cleanup
             console.log(`📷 Slideshow sẽ sử dụng TẤT CẢ ${uniqueImages.length} ảnh`);
             
             if (uniqueImages.length === 0) {
                 console.log('⚠️ No images found, check Image folder or use fallbacks');
             } else if (uniqueImages.length === possibleImages.length) {
-                console.log('🎉 SUCCESS: Loaded ALL 42 images from folder!');
+                console.log(`🎉 SUCCESS: Loaded ALL ${possibleImages.length} images from folder!`);
             } else {
                 console.log(`⚡ Loaded ${uniqueImages.length}/${possibleImages.length} images`);
             }
