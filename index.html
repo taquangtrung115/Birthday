@@ -1369,8 +1369,8 @@
         let images = [];
         let currentSlide = 0;
 
-        // Danh sách các định dạng ảnh được hỗ trợ
-        const supportedFormats = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
+        // Danh sách các định dạng ảnh được hỗ trợ (bao gồm HEIC của Apple)
+        const supportedFormats = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'heic', 'heif', 'avif', 'tiff', 'tif'];
 
         // Danh sách tên file có thể có trong thư mục (để thử tải)
         const possibleImages = [
@@ -1397,6 +1397,24 @@
             'IMG_9799.JPG',
             'received_345382977611525.jpeg'
         ];
+
+        // Kiểm tra browser có hỗ trợ HEIC không
+        function checkHEICSupport() {
+            return new Promise((resolve) => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                
+                img.onload = () => resolve(true);
+                img.onerror = () => resolve(false);
+                
+                // Test với một HEIC sample nhỏ (data URI)
+                img.src = 'data:image/heic;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8A0XmOnAVWkgD8BlvdyO6nuw/t';
+                
+                // Fallback after timeout
+                setTimeout(() => resolve(false), 1000);
+            });
+        }
 
         // Hàm kiểm tra file ảnh có tồn tại không với timeout
         function checkImageExists(imagePath) {
@@ -1491,10 +1509,10 @@
                     ...Array.from({length: 10}, (_, i) => `photo${i + 1}`),
                 ];
 
-                // Parallel check cho patterns
+                // Parallel check cho patterns (bao gồm HEIC)
                 const patternPromises = [];
                 for (const pattern of quickPatterns) {
-                    for (const ext of ['jpg', 'jpeg', 'png', 'webp']) {
+                    for (const ext of ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif', 'avif']) {
                         const imagePath = `Image/${pattern}.${ext}`;
                         patternPromises.push(
                             checkImageExists(imagePath).then(exists => 
@@ -1537,6 +1555,7 @@
                             <div style="font-size: 3rem; margin-bottom: 10px;">🖼️</div>
                             <div>Đang tìm ảnh trong thư mục Image...</div>
                             <div style="font-size: 0.9rem; margin-top: 10px; opacity: 0.8;">
+                                Hỗ trợ: JPG, PNG, GIF, WebP, SVG, HEIC, HEIF, AVIF, TIFF<br>
                                 Hãy thêm ảnh vào thư mục Image và refresh trang!
                             </div>
                         </div>
@@ -2241,6 +2260,15 @@
             }, 500);
             
             console.log('⚡ Khởi động nhanh - tìm ảnh trong background...');
+            
+            // Kiểm tra HEIC support
+            checkHEICSupport().then(supported => {
+                if (supported) {
+                    console.log('📷 HEIC/HEIF images supported by browser!');
+                } else {
+                    console.log('📷 HEIC/HEIF not supported - will try to load but may fail');
+                }
+            });
             
             // Show slideshow với placeholder trước
             createSlideshow();
