@@ -1812,7 +1812,7 @@
             function playNextNote() {
                 if (noteIndex < notes.length && isMusicPlaying) {
                     const note = notes[noteIndex];
-                    playNote(note.freq, note.duration, 0.05);
+                    playNote(note.freq, note.duration, 1.5);
                     noteIndex++;
                     
                     setTimeout(playNextNote, note.duration * 1000);
