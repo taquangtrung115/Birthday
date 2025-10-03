@@ -346,6 +346,19 @@
             display: block;
         }
 
+        /* Image loading optimization */
+        .image-placeholder {
+            background: 
+                linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.1) 100%);
+            background-size: 200% 200%;
+            animation: placeholderShimmer 1.5s ease-in-out infinite;
+        }
+
+        @keyframes placeholderShimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
         /* Ensure images load properly on mobile */
         @media (max-width: 480px) {
             .slide img {
@@ -353,6 +366,10 @@
                 max-width: 100% !important;
                 height: auto !important;
                 object-fit: contain !important;
+            }
+            
+            .image-placeholder {
+                font-size: 0.9rem !important;
             }
         }
 
@@ -1277,63 +1294,130 @@
             'received_345382977611525.jpeg'
         ];
 
-        // Hàm kiểm tra file ảnh có tồn tại không
+        // Hàm kiểm tra file ảnh có tồn tại không với timeout
         function checkImageExists(imagePath) {
             return new Promise((resolve) => {
                 const img = new Image();
-                img.onload = () => resolve(true);
-                img.onerror = () => resolve(false);
+                let resolved = false;
+                
+                // Timeout sau 2 giây
+                const timeout = setTimeout(() => {
+                    if (!resolved) {
+                        resolved = true;
+                        resolve(false);
+                    }
+                }, 2000);
+                
+                img.onload = () => {
+                    if (!resolved) {
+                        resolved = true;
+                        clearTimeout(timeout);
+                        resolve(true);
+                    }
+                };
+                
+                img.onerror = () => {
+                    if (!resolved) {
+                        resolved = true;
+                        clearTimeout(timeout);
+                        resolve(false);
+                    }
+                };
+                
                 img.src = imagePath;
             });
         }
 
-        // Hàm tự động phát hiện ảnh có sẵn
+        // Preload ảnh với priority
+        function preloadImage(src, priority = 'low') {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = () => resolve(null);
+                
+                // Set loading priority
+                if ('loading' in img) {
+                    img.loading = priority === 'high' ? 'eager' : 'lazy';
+                }
+                
+                img.src = src;
+            });
+        }
+
+        // Hàm tự động phát hiện ảnh có sẵn với parallel loading
         async function detectAvailableImages() {
+            console.log('🔍 Đang tìm ảnh...');
+            
+            // Batch check ảnh song song thay vì tuần tự
+            const batchSize = 10;
             const availableImages = [];
             
-            // Kiểm tra từng ảnh có thể có
-            for (const imageName of possibleImages) {
-                const imagePath = `Image/${imageName}`;
-                const exists = await checkImageExists(imagePath);
-                if (exists) {
-                    availableImages.push(imagePath);
-                    console.log(`Tìm thấy ảnh: ${imagePath}`);
+            // Check ảnh trong danh sách có sẵn (parallel batches)
+            for (let i = 0; i < possibleImages.length; i += batchSize) {
+                const batch = possibleImages.slice(i, i + batchSize);
+                const batchPromises = batch.map(async (imageName) => {
+                    const imagePath = `Image/${imageName}`;
+                    const exists = await checkImageExists(imagePath);
+                    return exists ? imagePath : null;
+                });
+                
+                const results = await Promise.all(batchPromises);
+                results.forEach(result => {
+                    if (result) {
+                        availableImages.push(result);
+                        console.log(`✅ Tìm thấy: ${result}`);
+                    }
+                });
+                
+                // Nếu đã tìm thấy ít nhất 3 ảnh, dừng tìm kiếm để tăng tốc
+                if (availableImages.length >= 3) {
+                    console.log(`🎉 Đã tìm thấy ${availableImages.length} ảnh, bắt đầu slideshow!`);
+                    return availableImages;
                 }
             }
 
-            // Nếu không tìm thấy ảnh nào, thử một số pattern phổ biến
+            // Nếu không tìm thấy ảnh nào, thử pattern đơn giản hơn
             if (availableImages.length === 0) {
-                console.log('Không tìm thấy ảnh trong danh sách, thử tìm pattern khác...');
+                console.log('🔍 Thử tìm pattern khác...');
                 
-                // Thử một số pattern tên file phổ biến
-                const commonPatterns = [
-                    // Pattern IMG_xxxx
-                    ...Array.from({length: 100}, (_, i) => `IMG_${String(i).padStart(4, '0')}`),
-                    // Pattern image1, image2, etc.
-                    ...Array.from({length: 20}, (_, i) => `image${i + 1}`),
-                    ...Array.from({length: 20}, (_, i) => `photo${i + 1}`),
-                    // Pattern DSC_xxxx (máy ảnh Nikon)
-                    ...Array.from({length: 50}, (_, i) => `DSC_${String(i).padStart(4, '0')}`),
+                // Chỉ thử pattern phổ biến nhất
+                const quickPatterns = [
+                    ...Array.from({length: 20}, (_, i) => `IMG_${String(i).padStart(4, '0')}`),
+                    ...Array.from({length: 10}, (_, i) => `image${i + 1}`),
+                    ...Array.from({length: 10}, (_, i) => `photo${i + 1}`),
                 ];
 
-                for (const pattern of commonPatterns) {
-                    for (const ext of supportedFormats) {
+                // Parallel check cho patterns
+                const patternPromises = [];
+                for (const pattern of quickPatterns) {
+                    for (const ext of ['jpg', 'jpeg', 'png', 'webp']) {
                         const imagePath = `Image/${pattern}.${ext}`;
-                        const exists = await checkImageExists(imagePath);
-                        if (exists) {
-                            availableImages.push(imagePath);
-                            console.log(`Tìm thấy ảnh: ${imagePath}`);
-                        }
-                        if (availableImages.length >= 50) break; // Giới hạn để tránh quá nhiều
+                        patternPromises.push(
+                            checkImageExists(imagePath).then(exists => 
+                                exists ? imagePath : null
+                            )
+                        );
+                        
+                        // Giới hạn số lượng check để tránh quá tải
+                        if (patternPromises.length >= 50) break;
                     }
-                    if (availableImages.length >= 50) break;
+                    if (patternPromises.length >= 50) break;
                 }
+
+                const patternResults = await Promise.all(patternPromises);
+                patternResults.forEach(result => {
+                    if (result && availableImages.length < 10) {
+                        availableImages.push(result);
+                        console.log(`✅ Tìm thấy: ${result}`);
+                    }
+                });
             }
 
+            console.log(`🎊 Hoàn tất! Tìm thấy ${availableImages.length} ảnh`);
             return availableImages;
         }
 
-        // Tạo slideshow
+        // Tạo slideshow với lazy loading
         function createSlideshow() {
             const slideshowContainer = document.getElementById('slideshow');
             
@@ -1358,34 +1442,116 @@
                 return;
             }
             
+            // Tạo slides với lazy loading
             images.forEach((imagePath, index) => {
                 const slide = document.createElement('div');
                 slide.className = 'slide';
-                if (index === 0) slide.classList.add('active');
+                slide.dataset.imagePath = imagePath;
+                slide.dataset.imageIndex = index;
                 
-                const img = document.createElement('img');
-                img.src = imagePath;
-                img.alt = `Ảnh sinh nhật ${index + 1}`;
-                img.onerror = function() {
-                    console.log(`Không thể tải ảnh: ${imagePath}`);
-                    // Ẩn slide nếu không load được ảnh
-                    slide.style.display = 'none';
-                };
+                if (index === 0) {
+                    slide.classList.add('active');
+                    // Load ảnh đầu tiên ngay lập tức
+                    loadImageToSlide(slide, imagePath, index);
+                } else {
+                    // Các ảnh khác sẽ được load khi cần
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'image-placeholder';
+                    placeholder.style.cssText = `
+                        width: 100%; height: 100%; 
+                        background: linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+                        display: flex; align-items: center; justify-content: center;
+                        color: rgba(255,255,255,0.7); font-size: 1rem;
+                    `;
+                    placeholder.innerHTML = '📸 Đang tải...';
+                    slide.appendChild(placeholder);
+                }
                 
-                slide.appendChild(img);
                 slideshowContainer.appendChild(slide);
             });
 
-            console.log(`Đã tạo slideshow với ${images.length} ảnh`);
+            console.log(`🎉 Slideshow với ${images.length} ảnh (lazy loading)`);
+            
+            // Preload 2-3 ảnh tiếp theo trong background
+            setTimeout(() => {
+                preloadNextImages();
+            }, 1000);
         }
 
-        // Chuyển slide
+        // Load ảnh vào slide
+        function loadImageToSlide(slide, imagePath, index) {
+            const img = document.createElement('img');
+            img.style.cssText = `
+                width: 100%; height: 100%; object-fit: cover; 
+                opacity: 0; transition: opacity 0.3s ease;
+            `;
+            
+            img.onload = function() {
+                // Fade in effect
+                this.style.opacity = '1';
+                // Remove placeholder if exists
+                const placeholder = slide.querySelector('.image-placeholder');
+                if (placeholder) {
+                    setTimeout(() => placeholder.remove(), 300);
+                }
+            };
+            
+            img.onerror = function() {
+                console.log(`❌ Không thể tải: ${imagePath}`);
+                slide.style.display = 'none';
+            };
+            
+            img.src = imagePath;
+            img.alt = `Ảnh sinh nhật ${index + 1}`;
+            slide.appendChild(img);
+        }
+
+        // Preload các ảnh tiếp theo
+        function preloadNextImages() {
+            const currentIndex = currentSlide;
+            const preloadCount = Math.min(3, images.length);
+            
+            for (let i = 1; i <= preloadCount; i++) {
+                const nextIndex = (currentIndex + i) % images.length;
+                const slide = document.querySelector(`[data-image-index="${nextIndex}"]`);
+                
+                if (slide && slide.querySelector('.image-placeholder')) {
+                    const imagePath = slide.dataset.imagePath;
+                    setTimeout(() => {
+                        loadImageToSlide(slide, imagePath, nextIndex);
+                    }, i * 500); // Stagger loading
+                }
+            }
+        }
+
+        // Chuyển slide với preloading thông minh
         function nextSlide() {
             const slides = document.querySelectorAll('.slide');
+            if (slides.length === 0) return;
+            
             slides[currentSlide].classList.remove('active');
             
             currentSlide = (currentSlide + 1) % slides.length;
-            slides[currentSlide].classList.add('active');
+            const activeSlide = slides[currentSlide];
+            activeSlide.classList.add('active');
+            
+            // Load ảnh hiện tại nếu chưa load
+            if (activeSlide.querySelector('.image-placeholder')) {
+                const imagePath = activeSlide.dataset.imagePath;
+                const index = activeSlide.dataset.imageIndex;
+                loadImageToSlide(activeSlide, imagePath, parseInt(index));
+            }
+            
+            // Preload ảnh tiếp theo
+            const nextIndex = (currentSlide + 1) % slides.length;
+            const nextSlide = slides[nextIndex];
+            if (nextSlide && nextSlide.querySelector('.image-placeholder')) {
+                const imagePath = nextSlide.dataset.imagePath;
+                const index = nextSlide.dataset.imageIndex;
+                setTimeout(() => {
+                    loadImageToSlide(nextSlide, imagePath, parseInt(index));
+                }, 200);
+            }
         }
 
         // Pháo hoa Canvas
@@ -1573,24 +1739,37 @@
             }
         });
 
-        // Khởi tạo
+        // Khởi tạo với optimized loading
         window.addEventListener('load', async function() {
             resizeCanvas();
             
-            // Hiển thị loading message
-            console.log('Đang tìm kiếm ảnh trong thư mục Image...');
+            // Bắt đầu effects ngay lập tức
+            animate();
+            setTimeout(() => {
+                for (let i = 0; i < 2; i++) {
+                    setTimeout(createFirework, i * 300);
+                }
+            }, 500);
             
-            // Tự động phát hiện ảnh có sẵn
-            images = await detectAvailableImages();
+            console.log('⚡ Khởi động nhanh - tìm ảnh trong background...');
             
-            if (images.length > 0) {
-                console.log(`Tìm thấy ${images.length} ảnh`);
-            } else {
-                console.log('Không tìm thấy ảnh nào trong thư mục Image');
-            }
-            
-            // Tạo slideshow với ảnh đã tìm thấy
+            // Show slideshow với placeholder trước
             createSlideshow();
+            
+            // Tìm ảnh trong background
+            detectAvailableImages().then(foundImages => {
+                if (foundImages.length > 0) {
+                    console.log(`🎉 Cập nhật với ${foundImages.length} ảnh`);
+                    images = foundImages;
+                    
+                    // Recreate slideshow với ảnh thực
+                    const slideshowContainer = document.getElementById('slideshow');
+                    slideshowContainer.innerHTML = '';
+                    createSlideshow();
+                } else {
+                    console.log('ℹ️ Không tìm thấy ảnh - hiển thị placeholder');
+                }
+            });
             
             // Chỉ bắt đầu slideshow nếu có ảnh
             if (images.length > 1) {
