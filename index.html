@@ -1223,8 +1223,18 @@
     </style>
 </head>
 <body>
-    <!-- Happy Birthday Music Container -->
-    <div id="musicContainer" style="display: none;"></div>
+    <!-- Happy Birthday Background Music -->
+    <audio id="birthdayMusic" preload="auto" loop crossorigin="anonymous">
+        <!-- Free Happy Birthday music sources -->
+        <source src="https://orangefreesounds.com/wp-content/uploads/2022/02/Happy-birthday-song.mp3" type="audio/mpeg">
+        <source src="https://www.soundboard.com/handler/DownLoadTrack.ashx?cliptitle=Happy+Birthday+To+You&filename=mz/Mzg1ODMxNTM2MzY3_JzthqW2juk.MP3" type="audio/mpeg">
+        <source src="https://actions.google.com/sounds/v1/celebrations/birthday_party_horn.ogg" type="audio/ogg">
+    </audio>
+
+    <!-- Fallback: YouTube embedded (hidden) -->
+    <iframe id="youtubePlayer" width="0" height="0" src="https://www.youtube.com/embed/Z1H0Kz6seW4?enablejsapi=1&autoplay=1&loop=1&playlist=Z1H0Kz6seW4&controls=0&modestbranding=1" 
+            frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+            style="display: none;"></iframe>
     
     <canvas id="fireworksCanvas"></canvas>
     
@@ -1743,106 +1753,53 @@
             }
         });
 
-        // Happy Birthday Music Handler with Web Audio API
-        let audioContext = null;
-        let musicInterval = null;
-        let isMusicPlaying = false;
-
-        function createAudioContext() {
-            if (!audioContext) {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            return audioContext;
-        }
-
-        function playNote(frequency, duration, volume = 0.1) {
-            const ctx = createAudioContext();
-            const oscillator = ctx.createOscillator();
-            const gainNode = ctx.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(ctx.destination);
-            
-            oscillator.frequency.setValueAtTime(frequency, ctx.currentTime);
-            oscillator.type = 'triangle'; // Softer, warmer sound than sine
-            
-            gainNode.gain.setValueAtTime(0, ctx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(volume, ctx.currentTime + 0.1); // Smoother attack
-            gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration - 0.1); // Gentle release
-            
-            oscillator.start(ctx.currentTime);
-            oscillator.stop(ctx.currentTime + duration);
-        }
-
-        function playGentleMelody() {
-            // Beautiful gentle melody - "River Flows in You" inspired
-            const notes = [
-                // Phrase 1 - gentle ascending
-                {freq: 220, duration: 1.0}, // A3
-                {freq: 247, duration: 0.5}, // B3
-                {freq: 262, duration: 0.5}, // C4
-                {freq: 294, duration: 1.5}, // D4
-                {freq: 330, duration: 0.5}, // E4
-                {freq: 349, duration: 2.0}, // F4
-                
-                // Phrase 2 - flowing melody
-                {freq: 330, duration: 0.5}, // E4
-                {freq: 294, duration: 0.5}, // D4
-                {freq: 262, duration: 1.0}, // C4
-                {freq: 247, duration: 0.5}, // B3
-                {freq: 220, duration: 1.0}, // A3
-                {freq: 196, duration: 1.5}, // G3
-                
-                // Phrase 3 - beautiful rise
-                {freq: 220, duration: 0.5}, // A3
-                {freq: 262, duration: 0.5}, // C4
-                {freq: 330, duration: 1.0}, // E4
-                {freq: 392, duration: 1.5}, // G4
-                {freq: 440, duration: 1.0}, // A4
-                {freq: 392, duration: 1.5}, // G4
-                
-                // Phrase 4 - gentle conclusion
-                {freq: 349, duration: 0.5}, // F4
-                {freq: 330, duration: 0.5}, // E4
-                {freq: 294, duration: 1.0}, // D4
-                {freq: 262, duration: 1.5}, // C4
-                {freq: 220, duration: 2.5}, // A3 - long peaceful ending
-                
-                // Added harmonious notes for richness
-                {freq: 174, duration: 1.0}, // F3 - deeper base
-                {freq: 196, duration: 1.0}, // G3
-                {freq: 220, duration: 2.0}, // A3 - final note
-            ];
-            
-            let noteIndex = 0;
-            
-            function playNextNote() {
-                if (noteIndex < notes.length && isMusicPlaying) {
-                    const note = notes[noteIndex];
-                    playNote(note.freq, note.duration, 1.5);
-                    noteIndex++;
-                    
-                    setTimeout(playNextNote, note.duration * 1000);
-                } else if (isMusicPlaying) {
-                    // Loop the melody
-                    noteIndex = 0;
-                    setTimeout(playNextNote, 2000); // 2 second pause between loops
-                }
-            }
-            
-            playNextNote();
-        }
+        // Happy Birthday Music Handler with HTML5 Audio + YouTube Fallback
+        let musicStarted = false;
+        let audioFailed = false;
 
         function initMusic() {
+            const music = document.getElementById('birthdayMusic');
+            const youtube = document.getElementById('youtubePlayer');
+            
+            if (!music) return;
+
+            // Set volume
+            music.volume = 0.3;
+
             const startMusic = () => {
-                if (!isMusicPlaying) {
-                    try {
-                        createAudioContext();
-                        isMusicPlaying = true;
-                        playGentleMelody();
-                        console.log('🎵 Gentle melody started!');
-                    } catch (error) {
-                        console.log('🎵 Audio not supported');
+                if (!musicStarted) {
+                    musicStarted = true;
+                    
+                    const playPromise = music.play();
+                    if (playPromise !== undefined) {
+                        playPromise.then(() => {
+                            console.log('🎵 Happy Birthday music started!');
+                        }).catch((error) => {
+                            console.log('🎵 HTML5 audio failed, trying YouTube fallback...');
+                            audioFailed = true;
+                            
+                            // Show YouTube player as fallback
+                            if (youtube) {
+                                youtube.style.display = 'block';
+                                youtube.style.width = '1px';
+                                youtube.style.height = '1px';
+                                youtube.style.opacity = '0';
+                                youtube.style.position = 'absolute';
+                                youtube.style.top = '-9999px';
+                            }
+                            
+                            // Still try HTML5 audio on next interaction
+                            const retryPlay = () => {
+                                if (!audioFailed) {
+                                    music.play().catch(() => {});
+                                }
+                                document.removeEventListener('click', retryPlay);
+                                document.removeEventListener('touchstart', retryPlay);
+                            };
+                            
+                            document.addEventListener('click', retryPlay);
+                            document.addEventListener('touchstart', retryPlay);
+                        });
                     }
                 }
                 
@@ -1850,8 +1807,17 @@
                 document.removeEventListener('touchstart', startMusic);
             };
             
-            // Try to start immediately
-            setTimeout(startMusic, 1000);
+            // Handle audio loading errors
+            music.addEventListener('error', function() {
+                console.log('🎵 Audio source failed, trying next source...');
+            });
+
+            music.addEventListener('canplaythrough', function() {
+                console.log('🎵 Music loaded successfully');
+            });
+
+            // Try to start immediately after page load
+            setTimeout(startMusic, 2000);
             
             // Also start on user interaction
             document.addEventListener('click', startMusic);
