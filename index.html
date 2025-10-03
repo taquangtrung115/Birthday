@@ -419,6 +419,15 @@
             }
         }
 
+        /* Music Controls */
+        .music-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+            margin-top: 20px;
+        }
+
         /* Music Button Styles */
         .music-button {
             background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 50%, #45b7d1 100%);
@@ -452,6 +461,16 @@
         .music-button.playing {
             background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 50%, #096a09 100%);
             animation: musicButtonPlaying 1s ease-in-out infinite alternate;
+        }
+
+        .music-button.secondary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-size: 0.9rem;
+            padding: 10px 20px;
+        }
+
+        .music-button.secondary:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
         }
 
         @keyframes musicButtonPulse {
@@ -1282,8 +1301,20 @@
     </style>
 </head>
 <body>
-    <!-- Happy Birthday Music Container -->
-    <div id="musicContainer" style="display: none;"></div>
+    <!-- Happy Birthday Music from YouTube -->
+    <iframe id="youtubePlayer" 
+            width="1" height="1" 
+            src="about:blank"
+            frameborder="0" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+            allowfullscreen
+            style="position: absolute; left: -9999px; opacity: 0;">
+    </iframe>
+
+    <!-- Backup HTML5 Audio -->
+    <audio id="backupAudio" loop preload="none" style="display: none;">
+        <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.wav" type="audio/wav">
+    </audio>
     
     <canvas id="fireworksCanvas"></canvas>
     
@@ -1304,10 +1335,15 @@
                 🎈 Chúc em có một ngày sinh nhật thật vui vẻ và hạnh phúc! 🎈
             </div>
 
-            <!-- Music Control Button -->
-            <button id="musicButton" class="music-button" onclick="startMusicManually()">
-                🎵 Bấm để phát nhạc Happy Birthday! 🎵
-            </button>
+            <!-- Music Control Buttons -->
+            <div class="music-controls">
+                <button id="musicButton" class="music-button" onclick="startMusicManually()">
+                    🎵 Bấm để phát nhạc Happy Birthday! 🎵
+                </button>
+                <button id="nextMusicButton" class="music-button secondary" onclick="switchMusicSource()" style="display: none;">
+                    🔄 Đổi bài nhạc
+                </button>
+            </div>
         </div>
     </div>
 
@@ -1976,65 +2012,140 @@
             playBeep();
         }
 
+        // YouTube and Online Music System
+        let currentMusicSource = null;
+        const musicSources = [
+            {
+                type: 'youtube',
+                name: 'Happy Birthday Song (YouTube)',
+                url: 'https://www.youtube.com/embed/dtI0lj1JCT0?autoplay=1&loop=1&playlist=dtI0lj1JCT0&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3'
+            },
+            {
+                type: 'youtube', 
+                name: 'Happy Birthday Instrumental (YouTube)',
+                url: 'https://www.youtube.com/embed/Z1H0Kz6seW4?autoplay=1&loop=1&playlist=Z1H0Kz6seW4&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3'
+            },
+            {
+                type: 'youtube',
+                name: 'Happy Birthday Piano (YouTube)', 
+                url: 'https://www.youtube.com/embed/GXqFH-aTURQ?autoplay=1&loop=1&playlist=GXqFH-aTURQ&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3'
+            },
+            {
+                type: 'audio',
+                name: 'Online Audio File',
+                url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav'
+            }
+        ];
+
+        let currentSourceIndex = 0;
+
+        function loadMusicSource(index) {
+            const source = musicSources[index];
+            const youtubePlayer = document.getElementById('youtubePlayer');
+            const backupAudio = document.getElementById('backupAudio');
+            
+            console.log(`🎵 Loading: ${source.name}`);
+            
+            if (source.type === 'youtube') {
+                youtubePlayer.src = source.url;
+                backupAudio.pause();
+                currentMusicSource = 'youtube';
+            } else if (source.type === 'audio') {
+                youtubePlayer.src = 'about:blank';
+                backupAudio.src = source.url;
+                backupAudio.volume = 0.4;
+                backupAudio.play().catch(() => {
+                    console.log('🎵 Audio failed, trying next source...');
+                    tryNextMusicSource();
+                });
+                currentMusicSource = 'audio';
+            }
+        }
+
+        function tryNextMusicSource() {
+            currentSourceIndex = (currentSourceIndex + 1) % musicSources.length;
+            if (currentSourceIndex === 0) {
+                console.log('🎵 All sources tried, falling back to generated music...');
+                // Fallback to generated music
+                try {
+                    const ctx = createAudioContext();
+                    ctx.resume().then(() => {
+                        playHappyBirthdayMelody();
+                    }).catch(() => {
+                        speakHappyBirthday();
+                    });
+                } catch (e) {
+                    speakHappyBirthday();
+                }
+                return;
+            }
+            
+            setTimeout(() => {
+                loadMusicSource(currentSourceIndex);
+            }, 2000);
+        }
+
         // Manual music start function for button click
         function startMusicManually() {
             const button = document.getElementById('musicButton');
             
             if (!musicStarted) {
-                button.textContent = '🎵 Đang phát nhạc... 🎵';
+                button.textContent = '🎵 Đang tải nhạc từ YouTube... 🎵';
                 button.classList.add('playing');
                 
                 musicStarted = true;
-                console.log('🎵 User manually started music');
+                console.log('🎵 User started music - loading from online sources...');
                 
-                // Try all methods
-                let success = false;
+                // Start with first source
+                currentSourceIndex = 0;
+                loadMusicSource(currentSourceIndex);
                 
-                try {
-                    const ctx = createAudioContext();
-                    ctx.resume().then(() => {
-                        playHappyBirthdayMelody();
-                        console.log('🎵 Web Audio API started by user!');
-                        success = true;
-                    }).catch(() => {
-                        if (speakHappyBirthday()) {
-                            success = true;
-                        } else {
-                            createBeepSounds();
-                            success = true;
-                        }
-                    });
-                    
-                    if (ctx.state !== 'suspended') {
-                        playHappyBirthdayMelody();
-                        success = true;
+                // Update button after delay
+                setTimeout(() => {
+                    if (musicStarted) {
+                        const sourceName = musicSources[currentSourceIndex].name;
+                        button.textContent = `🎵 ${sourceName} 🎵`;
+                        document.getElementById('nextMusicButton').style.display = 'block';
                     }
-                } catch (error) {
-                    console.log('🎵 Web Audio failed, trying speech...');
-                    if (speakHappyBirthday()) {
-                        success = true;
-                    } else {
-                        console.log('🎵 Using beeps...');
-                        createBeepSounds();
-                        success = true;
-                    }
-                }
+                }, 3000);
                 
-                if (success) {
-                    setTimeout(() => {
-                        button.textContent = '🎵 Nhạc đang phát! 🎵';
-                    }, 1000);
-                }
             } else {
                 // Stop music
                 musicStarted = false;
+                currentMusicSource = null;
+                
+                // Stop all sources
+                document.getElementById('youtubePlayer').src = 'about:blank';
+                document.getElementById('backupAudio').pause();
                 if (musicLoopTimeout) clearTimeout(musicLoopTimeout);
                 if (speechSynthesis) speechSynthesis.cancel();
                 
                 button.textContent = '🎵 Bấm để phát nhạc Happy Birthday! 🎵';
                 button.classList.remove('playing');
+                document.getElementById('nextMusicButton').style.display = 'none';
                 console.log('🎵 Music stopped by user');
             }
+        }
+
+        // Switch music source function
+        function switchMusicSource() {
+            if (!musicStarted) return;
+            
+            const button = document.getElementById('musicButton');
+            const nextButton = document.getElementById('nextMusicButton');
+            
+            nextButton.textContent = '🔄 Đang chuyển...';
+            
+            // Try next source
+            tryNextMusicSource();
+            
+            setTimeout(() => {
+                if (musicStarted && currentSourceIndex < musicSources.length) {
+                    const sourceName = musicSources[currentSourceIndex].name;
+                    button.textContent = `🎵 ${sourceName} 🎵`;
+                    nextButton.textContent = '🔄 Đổi bài nhạc';
+                }
+            }, 2000);
         }
 
         function initMusic() {
