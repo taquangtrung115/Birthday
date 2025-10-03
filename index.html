@@ -419,6 +419,65 @@
             }
         }
 
+        /* Music Button Styles */
+        .music-button {
+            background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 50%, #45b7d1 100%);
+            border: none;
+            border-radius: 50px;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.2),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+            animation: musicButtonPulse 2s ease-in-out infinite;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .music-button:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 
+                0 12px 40px rgba(0, 0, 0, 0.3),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+        }
+
+        .music-button:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .music-button.playing {
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 50%, #096a09 100%);
+            animation: musicButtonPlaying 1s ease-in-out infinite alternate;
+        }
+
+        @keyframes musicButtonPulse {
+            0%, 100% { 
+                box-shadow: 
+                    0 8px 32px rgba(0, 0, 0, 0.2),
+                    0 0 0 0 rgba(255, 107, 107, 0.4);
+            }
+            50% { 
+                box-shadow: 
+                    0 8px 32px rgba(0, 0, 0, 0.2),
+                    0 0 0 15px rgba(255, 107, 107, 0.1);
+            }
+        }
+
+        @keyframes musicButtonPlaying {
+            0% { 
+                transform: scale(1);
+                filter: brightness(1);
+            }
+            100% { 
+                transform: scale(1.02);
+                filter: brightness(1.1);
+            }
+        }
+
         @keyframes messageShine {
             0% { left: -100%; }
             50% { left: 100%; }
@@ -1244,6 +1303,11 @@
             <div class="birthday-message">
                 🎈 Chúc em có một ngày sinh nhật thật vui vẻ và hạnh phúc! 🎈
             </div>
+
+            <!-- Music Control Button -->
+            <button id="musicButton" class="music-button" onclick="startMusicManually()">
+                🎵 Bấm để phát nhạc Happy Birthday! 🎵
+            </button>
         </div>
     </div>
 
@@ -1912,6 +1976,67 @@
             playBeep();
         }
 
+        // Manual music start function for button click
+        function startMusicManually() {
+            const button = document.getElementById('musicButton');
+            
+            if (!musicStarted) {
+                button.textContent = '🎵 Đang phát nhạc... 🎵';
+                button.classList.add('playing');
+                
+                musicStarted = true;
+                console.log('🎵 User manually started music');
+                
+                // Try all methods
+                let success = false;
+                
+                try {
+                    const ctx = createAudioContext();
+                    ctx.resume().then(() => {
+                        playHappyBirthdayMelody();
+                        console.log('🎵 Web Audio API started by user!');
+                        success = true;
+                    }).catch(() => {
+                        if (speakHappyBirthday()) {
+                            success = true;
+                        } else {
+                            createBeepSounds();
+                            success = true;
+                        }
+                    });
+                    
+                    if (ctx.state !== 'suspended') {
+                        playHappyBirthdayMelody();
+                        success = true;
+                    }
+                } catch (error) {
+                    console.log('🎵 Web Audio failed, trying speech...');
+                    if (speakHappyBirthday()) {
+                        success = true;
+                    } else {
+                        console.log('🎵 Using beeps...');
+                        createBeepSounds();
+                        success = true;
+                    }
+                }
+                
+                if (success) {
+                    setTimeout(() => {
+                        button.textContent = '🎵 Nhạc đang phát! 🎵';
+                    }, 1000);
+                }
+            } else {
+                // Stop music
+                musicStarted = false;
+                if (musicLoopTimeout) clearTimeout(musicLoopTimeout);
+                if (speechSynthesis) speechSynthesis.cancel();
+                
+                button.textContent = '🎵 Bấm để phát nhạc Happy Birthday! 🎵';
+                button.classList.remove('playing');
+                console.log('🎵 Music stopped by user');
+            }
+        }
+
         function initMusic() {
             // Check speech synthesis support
             speechSupported = 'speechSynthesis' in window;
@@ -1971,13 +2096,22 @@
                 document.removeEventListener('touchstart', startMusic);
             };
             
-            // Start music immediately and on interaction
-            setTimeout(startMusic, 1000);
-            document.addEventListener('click', startMusic);
-            document.addEventListener('touchstart', startMusic);
+            // Only setup, don't auto-start (user must click button)
+            console.log('🎵 Music system ready. Click the button to start!');
             
-            // Also try on page focus
-            window.addEventListener('focus', startMusic);
+            // Optional: Still try auto-start after user interacts with page
+            let userInteracted = false;
+            const enableAutoStart = () => {
+                if (!userInteracted) {
+                    userInteracted = true;
+                    setTimeout(startMusic, 500);
+                }
+            };
+            
+            // Auto-start only after user has interacted with page
+            document.addEventListener('click', enableAutoStart, { once: true });
+            document.addEventListener('touchstart', enableAutoStart, { once: true });
+            document.addEventListener('keydown', enableAutoStart, { once: true });
         }
 
         // Khởi tạo với optimized loading
