@@ -1717,8 +1717,8 @@
         const supportedFormats = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'heic', 'heif', 'avif', 'tiff', 'tif'];
 
         // DANH SÁCH CHÍNH XÁC tất cả 39 ảnh hiện tại trong thư mục Image  
-        // Ưu tiên ảnh được hỗ trợ rộng rãi trước, HEIC sau
-        const supportedImages = [
+        // Danh sách tất cả ảnh hiện có (chỉ JPG/JPEG/WEBP)
+        const possibleImages = [
             'beauty_1677765546034.JPG',
             'CD08DB3E-872C-45AF-8416-7F1616DF297F.JPG',
             'IMG20211219100556.jpg',
@@ -1747,25 +1747,6 @@
             'IMG_9847.JPG',
             'received_345382977611525.jpeg'
         ];
-
-        const heicImages = [
-            'IMG_1464.heic',
-            'IMG_2253.HEIC',
-            'IMG_2263.HEIC',
-            'IMG_2266.HEIC',
-            'IMG_4785.heic',
-            'IMG_4827.heic',
-            'IMG_4882.heic',
-            'IMG_5163.HEIC',
-            'IMG_5169.HEIC',
-            'IMG_5296.HEIC',
-            'IMG_6983.HEIC',
-            'IMG_7514.HEIC',
-            'IMG_9804.HEIC'
-        ];
-
-        // Kết hợp danh sách: ưu tiên supported trước
-        const possibleImages = [...supportedImages, ...heicImages];
         
         // Slideshow initialized with images
 
@@ -1926,12 +1907,11 @@
         // Hàm tự động phát hiện ảnh có sẵn - OPTIMIZED VERSION
         async function detectAvailableImages() {
             const availableImages = [];
-            console.log(`🔍 Bắt đầu quét ${possibleImages.length} ảnh...`);
             
-            // Load supported images first (higher success rate)
-            console.log('📸 Đang load ảnh JPG/PNG/WEBP...');
-            for (let i = 0; i < supportedImages.length; i += 5) {
-                const batch = supportedImages.slice(i, i + 5);
+            // Load tất cả ảnh (đều là JPG/JPEG/WEBP - được hỗ trợ rộng rãi)
+            const batchSize = 8;
+            for (let i = 0; i < possibleImages.length; i += batchSize) {
+                const batch = possibleImages.slice(i, i + batchSize);
                 const batchPromises = batch.map(async (imageName) => {
                     const imagePath = `Image/${imageName}`;
                     const exists = await checkImageExists(imagePath, 2);
@@ -1942,38 +1922,13 @@
                 batchResults.forEach(result => {
                     if (result.exists) {
                         availableImages.push(result.imagePath);
-                        console.log('✅', result.imageName);
-                    } else {
-                        console.log('❌', result.imageName);
                     }
                 });
-            }
-            
-            // Try HEIC images if browser supports them
-            console.log('🧪 Kiểm tra HEIC support...');
-            const heicSupported = await checkHEICSupport();
-            if (heicSupported) {
-                console.log('📸 HEIC được hỗ trợ, đang load HEIC images...');
-                for (let i = 0; i < heicImages.length; i += 3) {
-                    const batch = heicImages.slice(i, i + 3);
-                    const batchPromises = batch.map(async (imageName) => {
-                        const imagePath = `Image/${imageName}`;
-                        const exists = await checkImageExists(imagePath, 1);
-                        return { imagePath, exists, imageName };
-                    });
-                    
-                    const batchResults = await Promise.all(batchPromises);
-                    batchResults.forEach(result => {
-                        if (result.exists) {
-                            availableImages.push(result.imagePath);
-                            console.log('✅ HEIC:', result.imageName);
-                        } else {
-                            console.log('❌ HEIC:', result.imageName);
-                        }
-                    });
+                
+                // Small delay between batches
+                if (i + batchSize < possibleImages.length) {
+                    await new Promise(resolve => setTimeout(resolve, 50));
                 }
-            } else {
-                console.log('⚠️ HEIC không được hỗ trợ, bỏ qua', heicImages.length, 'ảnh HEIC');
             }
             
             // Remove duplicates and sort
@@ -2003,8 +1958,7 @@
             }
             
             // Hiển thị TẤT CẢ ảnh found (không giới hạn)
-            const maxImages = 39; // Support all images in folder after cleanup
-            console.log(`🎉 Tìm thấy ${uniqueImages.length}/${possibleImages.length} ảnh có thể load được`);
+            const maxImages = 26; // Support all 26 JPG/JPEG/WEBP images
             
             return uniqueImages; // Return all found images
         }
@@ -2904,12 +2858,7 @@
             
 
             
-            // Kiểm tra HEIC support
-            checkHEICSupport().then(supported => {
-                if (supported) {
 
-                }
-            });
             
             // Show slideshow với placeholder trước
             showLoadingOverlay();
