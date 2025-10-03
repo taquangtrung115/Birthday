@@ -229,17 +229,19 @@
 
         .slideshow-wrapper {
             position: relative;
-            width: 100%;
-            max-width: 600px;
+            width: calc(100% - 20px);
+            max-width: min(90vw, 600px);
             margin: 15px auto;
             display: block;
             padding: 0 10px;
+            box-sizing: border-box;
         }
 
         .slideshow-container {
             position: relative;
             width: 100%;
-            aspect-ratio: 16/10;
+            height: 0;
+            padding-bottom: 62.5%; /* 16:10 aspect ratio */
             border-radius: 24px;
             overflow: hidden;
             background: rgba(255, 255, 255, 0.12);
@@ -319,7 +321,7 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* Enhanced Slideshow Styles */
+        /* Enhanced Slideshow Styles with GPU Acceleration */
         .slide {
             position: absolute;
             top: 0;
@@ -327,8 +329,9 @@
             width: 100%;
             height: 100%;
             opacity: 0;
-            transform: translateX(100%) scale(0.9);
-            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translate3d(100%, 0, 0) scale3d(0.95, 0.95, 1);
+            transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), 
+                       opacity 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
             border-radius: 20px;
             overflow: hidden;
             display: flex;
@@ -337,52 +340,56 @@
             background: linear-gradient(135deg, 
                 rgba(255, 255, 255, 0.1) 0%, 
                 rgba(255, 255, 255, 0.05) 100%);
+            will-change: transform, opacity;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            box-sizing: border-box;
         }
 
         .slide.active {
             opacity: 1;
-            transform: translateX(0) scale(1);
+            transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
             z-index: 2;
         }
 
         .slide.prev {
-            transform: translateX(-100%) scale(0.9);
+            transform: translate3d(-100%, 0, 0) scale3d(0.95, 0.95, 1);
             opacity: 0;
         }
 
         .slide.next {
-            transform: translateX(100%) scale(0.9);
+            transform: translate3d(100%, 0, 0) scale3d(0.95, 0.95, 1);
             opacity: 0;
         }
 
-        /* Smooth slide transitions with different effects */
+        /* Optimized slide transitions */
         .slide.fade-in {
-            animation: fadeSlideIn 0.8s ease-out forwards;
+            animation: smoothSlideIn 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
         }
 
         .slide.fade-out {
-            animation: fadeSlideOut 0.8s ease-in forwards;
+            animation: smoothSlideOut 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
         }
 
-        @keyframes fadeSlideIn {
+        @keyframes smoothSlideIn {
             0% {
                 opacity: 0;
-                transform: translateY(30px) scale(0.95);
+                transform: translate3d(0, 20px, 0) scale3d(0.98, 0.98, 1);
             }
             100% {
                 opacity: 1;
-                transform: translateY(0) scale(1);
+                transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
             }
         }
 
-        @keyframes fadeSlideOut {
+        @keyframes smoothSlideOut {
             0% {
                 opacity: 1;
-                transform: translateY(0) scale(1);
+                transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
             }
             100% {
                 opacity: 0;
-                transform: translateY(-30px) scale(0.95);
+                transform: translate3d(0, -20px, 0) scale3d(0.98, 0.98, 1);
             }
         }
 
@@ -396,11 +403,19 @@
             box-shadow: 
                 0 8px 32px rgba(0, 0, 0, 0.3),
                 0 2px 8px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s ease;
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            will-change: transform;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
         }
 
         .slide img:hover {
-            transform: scale(1.02);
+            transform: scale3d(1.02, 1.02, 1);
+        }
+
+        /* Optimize image loading */
+        .slide img[data-optimized] {
+            filter: brightness(1.02) contrast(1.05);
         }
 
         .image-placeholder {
@@ -451,6 +466,55 @@
         @keyframes shimmer {
             0% { background-position: -200% 0; }
             100% { background-position: 200% 0; }
+        }
+
+        /* Responsive breakpoints for slideshow */
+        @media screen and (max-width: 768px) {
+            .slideshow-wrapper {
+                max-width: 95vw;
+                margin: 10px auto;
+                padding: 0 5px;
+            }
+            
+            .slideshow-container {
+                padding-bottom: 75%; /* More square aspect ratio on mobile */
+                border-radius: 16px;
+            }
+            
+            .slide {
+                border-radius: 16px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .slideshow-wrapper {
+                max-width: 98vw;
+                margin: 5px auto;
+                padding: 0 2px;
+            }
+            
+            .slideshow-container {
+                padding-bottom: 80%;
+                border-radius: 12px;
+            }
+            
+            .slide {
+                border-radius: 12px;
+            }
+            
+            .slide img {
+                border-radius: 8px;
+            }
+        }
+
+        @media screen and (min-width: 1024px) {
+            .slideshow-wrapper {
+                max-width: 700px;
+            }
+            
+            .slideshow-container {
+                padding-bottom: 56.25%; /* 16:9 on desktop */
+            }
         }
 
         @keyframes float {
@@ -1582,8 +1646,8 @@
             });
         }
 
-        // Hàm kiểm tra file ảnh có tồn tại không với retry mechanism
-        function checkImageExists(imagePath, retries = 2) {
+        // Hàm kiểm tra file ảnh có tồn tại không với debug chi tiết
+        function checkImageExists(imagePath, retries = 1) {
             return new Promise((resolve) => {
                 let attempts = 0;
                 
@@ -1592,33 +1656,36 @@
                     const img = new Image();
                     let resolved = false;
                     
-                    // Timeout ngắn hơn cho mỗi attempt
+                    console.log(`🔍 Checking image: ${imagePath} (attempt ${attempts})`);
+                    
+                    // Timeout ngắn hơn để tăng tốc
                     const timeout = setTimeout(() => {
                         if (!resolved) {
                             resolved = true;
+                            console.log(`⏰ Timeout for: ${imagePath}`);
                             if (attempts < retries) {
-                                // Thử lại sau delay ngắn
-                                setTimeout(tryLoad, 100);
+                                setTimeout(tryLoad, 50);
                             } else {
                                 resolve(false);
                             }
                         }
-                    }, 1500);
+                    }, 1000);
                     
                     img.onload = () => {
                         if (!resolved) {
                             resolved = true;
                             clearTimeout(timeout);
+                            console.log(`✅ Found: ${imagePath} (${img.naturalWidth}x${img.naturalHeight})`);
                             resolve(true);
                         }
                     };
                     
-                    img.onerror = () => {
+                    img.onerror = (error) => {
                         if (!resolved) {
                             resolved = true;
                             clearTimeout(timeout);
+                            console.log(`❌ Error loading: ${imagePath}`, error);
                             if (attempts < retries) {
-                                // Thử lại ngay lập tức với attempt khác
                                 setTimeout(tryLoad, 50);
                             } else {
                                 resolve(false);
@@ -1626,20 +1693,68 @@
                         }
                     };
                     
-                    // Add cache busting for retry attempts
-                    const cacheBuster = attempts > 1 ? `?v=${Date.now()}` : '';
-                    img.src = imagePath + cacheBuster;
+                    // Thử multiple path formats
+                    const paths = [
+                        imagePath,
+                        `./${imagePath}`,
+                        `/${imagePath}`,
+                    ];
+                    
+                    img.src = paths[Math.min(attempts - 1, paths.length - 1)];
                 }
                 
                 tryLoad();
             });
         }
 
-        // Preload ảnh với priority
+        // Optimize và resize ảnh để tăng performance
+        function optimizeImage(img, maxWidth = 800, maxHeight = 600, quality = 0.85) {
+            return new Promise((resolve) => {
+                // Nếu ảnh đã nhỏ, không cần resize
+                if (img.naturalWidth <= maxWidth && img.naturalHeight <= maxHeight) {
+                    resolve(img.src);
+                    return;
+                }
+                
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Tính toán kích thước mới giữ tỷ lệ
+                const ratio = Math.min(maxWidth / img.naturalWidth, maxHeight / img.naturalHeight);
+                canvas.width = img.naturalWidth * ratio;
+                canvas.height = img.naturalHeight * ratio;
+                
+                // Vẽ ảnh với kích thước mới
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                
+                // Convert to optimized blob
+                canvas.toBlob((blob) => {
+                    const optimizedUrl = URL.createObjectURL(blob);
+                    resolve(optimizedUrl);
+                }, 'image/jpeg', quality);
+            });
+        }
+
+        // Preload ảnh với priority và optimization
         function preloadImage(src, priority = 'low') {
             return new Promise((resolve) => {
                 const img = new Image();
-                img.onload = () => resolve(img);
+                
+                img.onload = async () => {
+                    try {
+                        // Optimize ảnh nếu quá lớn
+                        const optimizedSrc = await optimizeImage(img);
+                        resolve({
+                            original: img,
+                            optimizedSrc: optimizedSrc,
+                            isOptimized: optimizedSrc !== img.src
+                        });
+                    } catch (error) {
+                        console.log('Optimization failed, using original:', src);
+                        resolve({ original: img, optimizedSrc: img.src, isOptimized: false });
+                    }
+                };
+                
                 img.onerror = () => resolve(null);
                 
                 // Set loading priority
@@ -1654,9 +1769,16 @@
         // Hàm tự động phát hiện ảnh có sẵn với aggressive scanning
         async function detectAvailableImages() {
             console.log('🔍 Đang quét tất cả ảnh trong thư mục Image...');
+            console.log('📁 Current URL:', window.location.href);
+            console.log('📂 Looking for images in "Image/" folder');
             
             const availableImages = [];
             const checkedPaths = new Set();
+            
+            // Test basic connectivity first
+            console.log('🧪 Testing image loading capability...');
+            const testResult = await checkImageExists('Image/beauty_1677765546034.JPG');
+            console.log('🧪 Test result for known image:', testResult);
             
             // Strategy 1: Check tất cả ảnh trong possibleImages  
             console.log('📂 Checking known images...');
@@ -1771,9 +1893,43 @@
             
             // Remove duplicates and sort
             const uniqueImages = [...new Set(availableImages)];
-            console.log(`📷 Tổng cộng: ${uniqueImages.length} ảnh unique`);
             
-            return uniqueImages;
+            // Nếu không tìm thấy ảnh nào, thêm fallback placeholder images
+            if (uniqueImages.length === 0) {
+                console.log('🎨 Không tìm thấy ảnh, sử dụng fallback placeholders');
+                
+                const fallbackImages = [
+                    'https://picsum.photos/800/600?random=1',
+                    'https://picsum.photos/800/600?random=2', 
+                    'https://picsum.photos/800/600?random=3',
+                    'https://picsum.photos/800/600?random=4',
+                    'https://picsum.photos/800/600?random=5'
+                ];
+                
+                // Test fallback connectivity
+                const fallbackTest = await checkImageExists(fallbackImages[0]);
+                if (fallbackTest) {
+                    console.log('✅ Fallback images available, using placeholders');
+                    return fallbackImages;
+                } else {
+                    console.log('❌ No internet connection for fallback images');
+                    return [];
+                }
+            }
+            
+            // Giới hạn số lượng ảnh để tối ưu performance (max 15-20 ảnh)
+            const maxImages = 20;
+            const optimizedImages = uniqueImages.length > maxImages 
+                ? uniqueImages.slice(0, maxImages)
+                : uniqueImages;
+                
+            if (uniqueImages.length > maxImages) {
+                console.log(`⚡ Tối ưu performance: Giới hạn từ ${uniqueImages.length} → ${maxImages} ảnh`);
+            }
+            
+            console.log(`📷 Slideshow sẽ sử dụng: ${optimizedImages.length} ảnh`);
+            
+            return optimizedImages;
         }
 
         // Tạo slideshow với lazy loading
@@ -1785,13 +1941,23 @@
                 const noImageSlide = document.createElement('div');
                 noImageSlide.className = 'slide active';
                 
-                // Debug info
+                // Enhanced debug info
                 const debugInfo = {
                     totalPossibleImages: possibleImages.length,
                     browserSupportsHEIC: 'unknown',
                     imageFormatsSupported: supportedFormats.join(', '),
                     currentPath: window.location.href,
-                    timestamp: new Date().toLocaleString()
+                    timestamp: new Date().toLocaleString(),
+                    protocol: window.location.protocol,
+                    hostname: window.location.hostname,
+                    port: window.location.port,
+                    isLocalhost: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1',
+                    imageFolder: 'Image/',
+                    sampleImagePaths: [
+                        'Image/beauty_1677765546034.JPG',
+                        'Image/IMG_0023.JPG', 
+                        'Image/IMG_1427.JPG'
+                    ]
                 };
                 
                 noImageSlide.innerHTML = `
@@ -1805,11 +1971,16 @@
                             </div>
                             <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; margin: 15px 0;">
                                 <div style="font-weight: bold; margin-bottom: 8px;">🐛 Debug Info:</div>
-                                <div style="font-size: 0.9rem; text-align: left;">
+                                <div style="font-size: 0.85rem; text-align: left; line-height: 1.4;">
                                     • Đã kiểm tra: ${debugInfo.totalPossibleImages} files<br>
                                     • Path hiện tại: ${debugInfo.currentPath}<br>
+                                    • Server: ${debugInfo.protocol}//${debugInfo.hostname}:${debugInfo.port}<br>
+                                    • Local server: ${debugInfo.isLocalhost ? 'Yes' : 'No'}<br>
+                                    • Image folder: "${debugInfo.imageFolder}"<br>
                                     • Định dạng hỗ trợ: ${debugInfo.imageFormatsSupported}<br>
-                                    • Thời gian: ${debugInfo.timestamp}
+                                    • Thời gian: ${debugInfo.timestamp}<br><br>
+                                    <strong>🔍 Sample paths being tested:</strong><br>
+                                    ${debugInfo.sampleImagePaths.map(path => `• ${path}`).join('<br>')}
                                 </div>
                             </div>
                             <div style="font-size: 0.95rem; margin-top: 15px; opacity: 0.9;">
@@ -1975,37 +2146,44 @@
             const currentSlideEl = slides[currentSlide];
             const newSlideEl = slides[slideIndex];
             
-            // Add smooth transition classes
+            // Optimized smooth transition
             currentSlideEl.classList.add('fade-out');
             
-            setTimeout(() => {
-                currentSlideEl.classList.remove('active', 'fade-out');
-                currentSlide = slideIndex;
-                newSlideEl.classList.add('active', 'fade-in');
-                
-                // Remove transition class after animation
+            // Use requestAnimationFrame for smoother transitions
+            requestAnimationFrame(() => {
                 setTimeout(() => {
-                    newSlideEl.classList.remove('fade-in');
-                }, 800);
-                
-                updateSlideIndicators();
-                
-                // Load ảnh hiện tại nếu chưa load
-                if (newSlideEl.querySelector('.image-placeholder')) {
-                    const imagePath = newSlideEl.dataset.imagePath;
-                    const index = newSlideEl.dataset.imageIndex;
-                    loadImageToSlide(newSlideEl, imagePath, parseInt(index));
-                }
-                
-                // Preload ảnh tiếp theo
-                const nextIndex = (currentSlide + 1) % slides.length;
-                const nextSlideEl = slides[nextIndex];
-                if (nextSlideEl && nextSlideEl.querySelector('.image-placeholder')) {
-                    const imagePath = nextSlideEl.dataset.imagePath;
-                    const index = nextSlideEl.dataset.imageIndex;
-                    loadImageToSlide(nextSlideEl, imagePath, parseInt(index));
-                }
-            }, 200);
+                    currentSlideEl.classList.remove('active', 'fade-out');
+                    currentSlide = slideIndex;
+                    newSlideEl.classList.add('active', 'fade-in');
+                    
+                    // Remove transition class after animation
+                    setTimeout(() => {
+                        newSlideEl.classList.remove('fade-in');
+                    }, 600);
+                    
+                    updateSlideIndicators();
+                    
+                    // Lazy load current image if needed
+                    if (newSlideEl.querySelector('.image-placeholder')) {
+                        const imagePath = newSlideEl.dataset.imagePath;
+                        const index = newSlideEl.dataset.imageIndex;
+                        loadImageToSlide(newSlideEl, imagePath, parseInt(index));
+                    }
+                    
+                    // Smart preloading - only preload next 2 images
+                    for (let i = 1; i <= 2; i++) {
+                        const nextIndex = (currentSlide + i) % slides.length;
+                        const nextSlideEl = slides[nextIndex];
+                        if (nextSlideEl && nextSlideEl.querySelector('.image-placeholder')) {
+                            const imagePath = nextSlideEl.dataset.imagePath;
+                            const index = nextSlideEl.dataset.imageIndex;
+                            setTimeout(() => {
+                                loadImageToSlide(nextSlideEl, imagePath, parseInt(index));
+                            }, i * 300); // Stagger loading
+                        }
+                    }
+                }, 100);
+            });
         }
 
         function nextSlide() {
