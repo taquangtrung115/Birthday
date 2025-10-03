@@ -340,10 +340,11 @@
         .slide img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
             object-position: center;
             min-height: 200px;
             display: block;
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
         }
 
         /* Image loading optimization */
@@ -1222,6 +1223,9 @@
     </style>
 </head>
 <body>
+    <!-- Happy Birthday Music Container -->
+    <div id="musicContainer" style="display: none;"></div>
+    
     <canvas id="fireworksCanvas"></canvas>
     
     <!-- Depth layers for visual enhancement -->
@@ -1739,9 +1743,120 @@
             }
         });
 
+        // Happy Birthday Music Handler with Web Audio API
+        let audioContext = null;
+        let musicInterval = null;
+        let isMusicPlaying = false;
+
+        function createAudioContext() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            return audioContext;
+        }
+
+        function playNote(frequency, duration, volume = 0.1) {
+            const ctx = createAudioContext();
+            const oscillator = ctx.createOscillator();
+            const gainNode = ctx.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(ctx.destination);
+            
+            oscillator.frequency.setValueAtTime(frequency, ctx.currentTime);
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0, ctx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(volume, ctx.currentTime + 0.01);
+            gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + duration);
+            
+            oscillator.start(ctx.currentTime);
+            oscillator.stop(ctx.currentTime + duration);
+        }
+
+        function playHappyBirthday() {
+            // Happy Birthday melody notes (simplified)
+            const notes = [
+                {freq: 262, duration: 0.5}, // C4
+                {freq: 262, duration: 0.5}, // C4  
+                {freq: 294, duration: 1.0}, // D4
+                {freq: 262, duration: 1.0}, // C4
+                {freq: 349, duration: 1.0}, // F4
+                {freq: 330, duration: 2.0}, // E4
+                
+                {freq: 262, duration: 0.5}, // C4
+                {freq: 262, duration: 0.5}, // C4
+                {freq: 294, duration: 1.0}, // D4
+                {freq: 262, duration: 1.0}, // C4
+                {freq: 392, duration: 1.0}, // G4
+                {freq: 349, duration: 2.0}, // F4
+                
+                {freq: 262, duration: 0.5}, // C4
+                {freq: 262, duration: 0.5}, // C4
+                {freq: 523, duration: 1.0}, // C5
+                {freq: 440, duration: 1.0}, // A4
+                {freq: 349, duration: 1.0}, // F4
+                {freq: 330, duration: 1.0}, // E4
+                {freq: 294, duration: 2.0}, // D4
+                
+                {freq: 466, duration: 0.5}, // Bb4
+                {freq: 466, duration: 0.5}, // Bb4
+                {freq: 440, duration: 1.0}, // A4
+                {freq: 349, duration: 1.0}, // F4
+                {freq: 392, duration: 1.0}, // G4
+                {freq: 349, duration: 2.0}, // F4
+            ];
+            
+            let noteIndex = 0;
+            
+            function playNextNote() {
+                if (noteIndex < notes.length && isMusicPlaying) {
+                    const note = notes[noteIndex];
+                    playNote(note.freq, note.duration, 0.05);
+                    noteIndex++;
+                    
+                    setTimeout(playNextNote, note.duration * 1000);
+                } else if (isMusicPlaying) {
+                    // Loop the melody
+                    noteIndex = 0;
+                    setTimeout(playNextNote, 2000); // 2 second pause between loops
+                }
+            }
+            
+            playNextNote();
+        }
+
+        function initMusic() {
+            const startMusic = () => {
+                if (!isMusicPlaying) {
+                    try {
+                        createAudioContext();
+                        isMusicPlaying = true;
+                        playHappyBirthday();
+                        console.log('🎵 Happy Birthday music started!');
+                    } catch (error) {
+                        console.log('🎵 Audio not supported');
+                    }
+                }
+                
+                document.removeEventListener('click', startMusic);
+                document.removeEventListener('touchstart', startMusic);
+            };
+            
+            // Try to start immediately
+            setTimeout(startMusic, 1000);
+            
+            // Also start on user interaction
+            document.addEventListener('click', startMusic);
+            document.addEventListener('touchstart', startMusic);
+        }
+
         // Khởi tạo với optimized loading
         window.addEventListener('load', async function() {
             resizeCanvas();
+            
+            // Khởi tạo nhạc nền
+            initMusic();
             
             // Bắt đầu effects ngay lập tức
             animate();
