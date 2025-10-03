@@ -1170,11 +1170,49 @@
                 left: 10px;
             }
 
-            .slide-nav.next {
-                right: 10px;
-            }
+        .slide-nav.next {
+            right: 10px;
+        }
 
-            .slide-indicators {
+        .slide-nav.play-pause {
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 15px;
+            font-size: 16px;
+            width: 45px;
+            height: 45px;
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        .slide-nav.play-pause:hover {
+            background: rgba(0, 0, 0, 0.9);
+            transform: translateX(-50%) scale(1.1);
+        }
+
+        /* Progress Bar Styles */
+        .slide-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 0 0 20px 20px;
+            overflow: hidden;
+        }
+
+        .slide-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, 
+                #ff6b6b 0%, 
+                #4ecdc4 25%, 
+                #45b7d1 50%, 
+                #96ceb4 75%, 
+                #feca57 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 0 0 20px 0;
+        }            .slide-indicators {
                 bottom: -35px;
             }
 
@@ -1538,6 +1576,11 @@
                 <button class="slide-nav prev" id="prevBtn" onclick="prevSlide()">
                     ❮
                 </button>
+                
+                <button class="slide-nav play-pause" id="playPauseBtn" onclick="toggleAutoAdvance()" title="Play/Pause Slideshow (Press P)">
+                    ⏸️
+                </button>
+                
                 <button class="slide-nav next" id="nextBtn" onclick="nextSlideManual()">
                     ❯
                 </button>
@@ -1545,6 +1588,11 @@
                 <!-- Slide Indicators -->
                 <div class="slide-indicators" id="slideIndicators">
                     <!-- Dots sẽ được tạo bởi JavaScript -->
+                </div>
+                
+                <!-- Progress Bar -->
+                <div class="slide-progress" id="slideProgress">
+                    <div class="slide-progress-bar" id="slideProgressBar"></div>
                 </div>
             </div>
             
@@ -2089,6 +2137,20 @@
             dots.forEach((dot, index) => {
                 dot.classList.toggle('active', index === currentSlide);
             });
+            
+            // Update progress bar
+            updateProgressBar();
+        }
+
+        function updateProgressBar() {
+            const slides = document.querySelectorAll('.slide');
+            const progressBar = document.getElementById('slideProgressBar');
+            
+            if (slides.length > 0 && progressBar) {
+                const progress = ((currentSlide + 1) / slides.length) * 100;
+                progressBar.style.width = `${progress}%`;
+                console.log(`📊 Progress: ${currentSlide + 1}/${slides.length} (${Math.round(progress)}%)`);
+            }
         }
 
         function goToSlide(slideIndex) {
@@ -2183,6 +2245,38 @@
             setTimeout(() => {
                 isPaused = false;
             }, 8000); // Resume after 8 seconds
+        }
+
+        function toggleAutoAdvance() {
+            isPaused = !isPaused;
+            console.log(isPaused ? '⏸️ Slideshow paused' : '▶️ Slideshow resumed');
+            
+            // Update button icon
+            const playPauseBtn = document.getElementById('playPauseBtn');
+            if (playPauseBtn) {
+                playPauseBtn.textContent = isPaused ? '▶️' : '⏸️';
+                playPauseBtn.title = isPaused ? 'Resume Slideshow (Press P)' : 'Pause Slideshow (Press P)';
+            }
+            
+            // Visual feedback toast
+            const message = document.createElement('div');
+            message.style.cssText = `
+                position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+                background: rgba(0,0,0,0.8); color: white; padding: 10px 20px;
+                border-radius: 20px; z-index: 1000; font-size: 14px;
+                transition: opacity 0.3s ease; backdrop-filter: blur(10px);
+            `;
+            message.textContent = isPaused ? '⏸️ Slideshow Paused' : '▶️ Slideshow Resumed';
+            document.body.appendChild(message);
+            
+            setTimeout(() => {
+                message.style.opacity = '0';
+                setTimeout(() => {
+                    if (document.body.contains(message)) {
+                        document.body.removeChild(message);
+                    }
+                }, 300);
+            }, 1500);
         }
 
         function createSlideIndicators() {
@@ -3044,20 +3138,39 @@
             // Check if it's a horizontal swipe (not vertical scroll)
             if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
                 if (deltaX > 0) {
-                    // Swipe right - previous image (create some sparkles)
+                    // Swipe right - previous slide (create some sparkles)
+                    prevSlide();
                     createSparkles();
+                    console.log('👈 Swipe right: Previous slide');
                 } else {
-                    // Swipe left - next image (create some hearts)
+                    // Swipe left - next slide (create some hearts)
+                    nextSlide();
                     createHearts();
+                    console.log('👉 Swipe left: Next slide');
                 }
-                // Trigger manual slide change
-                nextSlide();
+                
+                // Pause auto-advance when user interacts
+                pauseAutoAdvance();
                 
                 // Visual feedback for swipe
-                slideshow.style.transform = 'scale(0.95)';
+                const slideshowEl = document.getElementById('slideshow');
+                slideshowEl.style.transform = 'scale(0.98)';
                 setTimeout(() => {
-                    slideshow.style.transform = '';
-                }, 100);
+                    slideshowEl.style.transform = '';
+                }, 150);
+            } else if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 80) {
+                // Vertical swipe for slide navigation  
+                if (deltaY > 0) {
+                    // Swipe down - next slide
+                    nextSlide();
+                    pauseAutoAdvance();
+                    console.log('👇 Swipe down: Next slide');
+                } else {
+                    // Swipe up - previous slide
+                    prevSlide();
+                    pauseAutoAdvance();
+                    console.log('👆 Swipe up: Previous slide');
+                }
             }
         });
 
@@ -3067,16 +3180,45 @@
                 case 'ArrowLeft':
                     e.preventDefault();
                     prevSlide();
+                    pauseAutoAdvance();
                     break;
                 case 'ArrowRight':
                     e.preventDefault();
                     nextSlide();
+                    pauseAutoAdvance();
                     break;
                 case ' ': // Spacebar
                     e.preventDefault();
                     nextSlide();
+                    pauseAutoAdvance();
+                    break;
+                case 'p':
+                case 'P':
+                    e.preventDefault();
+                    toggleAutoAdvance();
                     break;
             }
+        });
+
+        // Mouse wheel scroll support
+        let scrollTimeout;
+        
+        document.getElementById('slideshow').addEventListener('wheel', (e) => {
+            e.preventDefault();
+            
+            // Debounce scroll events
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                if (e.deltaY > 0) {
+                    // Scroll down = next slide
+                    nextSlide();
+                    pauseAutoAdvance();
+                } else if (e.deltaY < 0) {
+                    // Scroll up = previous slide
+                    prevSlide();
+                    pauseAutoAdvance();
+                }
+            }, 50);
         });
 
         // Tạo pháo hoa ngẫu nhiên mạnh mẽ hơn khi trang được tải
