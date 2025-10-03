@@ -473,6 +473,69 @@
             background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
         }
 
+        /* Music Modal Styles */
+        .music-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .music-modal-content {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            text-align: center;
+        }
+
+        .music-modal-content h3 {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+
+        .music-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .music-item {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .music-item:hover {
+            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .music-item.active {
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
         @keyframes musicButtonPulse {
             0%, 100% { 
                 box-shadow: 
@@ -1338,11 +1401,25 @@
             <!-- Music Control Buttons -->
             <div class="music-controls">
                 <button id="musicButton" class="music-button" onclick="startMusicManually()">
-                    🎵 Bấm để phát nhạc Happy Birthday! 🎵
+                    🎵 Bấm để phát nhạc sinh nhật! 🎵
                 </button>
-                <button id="nextMusicButton" class="music-button secondary" onclick="switchMusicSource()" style="display: none;">
-                    🔄 Đổi bài nhạc
-                </button>
+                <div id="musicControlsExtra" style="display: none;">
+                    <button id="nextMusicButton" class="music-button secondary" onclick="switchMusicSource()">
+                        🔄 Đổi bài nhạc
+                    </button>
+                    <button id="musicListButton" class="music-button secondary" onclick="showMusicList()">
+                        📋 Chọn nhạc
+                    </button>
+                </div>
+            </div>
+
+            <!-- Music Selection Modal -->
+            <div id="musicModal" class="music-modal" style="display: none;">
+                <div class="music-modal-content">
+                    <h3>🎵 Chọn nhạc bạn thích:</h3>
+                    <div id="musicList" class="music-list"></div>
+                    <button onclick="closeMusicList()" class="music-button secondary">❌ Đóng</button>
+                </div>
             </div>
         </div>
     </div>
@@ -2036,23 +2113,53 @@
         const musicSources = [
             {
                 type: 'youtube',
-                name: 'Happy Birthday Song (YouTube)',
-                url: 'https://www.youtube.com/embed/dtI0lj1JCT0?autoplay=1&loop=1&playlist=dtI0lj1JCT0&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3'
+                name: '🎂 Happy Birthday - Stevie Wonder',
+                url: 'https://www.youtube.com/embed/inS9gAgSENE?autoplay=1&loop=1&playlist=inS9gAgSENE&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3'
             },
             {
-                type: 'youtube', 
-                name: 'Happy Birthday Instrumental (YouTube)',
+                type: 'youtube',
+                name: '🎹 Happy Birthday Piano Relaxing',
                 url: 'https://www.youtube.com/embed/Z1H0Kz6seW4?autoplay=1&loop=1&playlist=Z1H0Kz6seW4&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3'
             },
             {
                 type: 'youtube',
-                name: 'Happy Birthday Piano (YouTube)', 
-                url: 'https://www.youtube.com/embed/GXqFH-aTURQ?autoplay=1&loop=1&playlist=GXqFH-aTURQ&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3'
+                name: '🎊 Happy - Pharrell Williams',
+                url: 'https://www.youtube.com/embed/ZbZSe6N_BXs?autoplay=1&loop=1&playlist=ZbZSe6N_BXs&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3'
             },
             {
-                type: 'audio',
-                name: 'Online Audio File',
-                url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav'
+                type: 'youtube',
+                name: '🎵 Birthday - Katy Perry',
+                url: 'https://www.youtube.com/embed/yTCDVfMz15M?autoplay=1&loop=1&playlist=yTCDVfMz15M&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3'
+            },
+            {
+                type: 'youtube',
+                name: '🎶 Celebration - Kool & The Gang',
+                url: 'https://www.youtube.com/embed/3GwjfUFyY6M?autoplay=1&loop=1&playlist=3GwjfUFyY6M&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3'
+            },
+            {
+                type: 'youtube',
+                name: '🎸 Good 4 U - Olivia Rodrigo',
+                url: 'https://www.youtube.com/embed/gNi_6U5Pm_o?autoplay=1&loop=1&playlist=gNi_6U5Pm_o&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3'
+            },
+            {
+                type: 'youtube',
+                name: '💝 Perfect - Ed Sheeran',
+                url: 'https://www.youtube.com/embed/2Vv-BfVoq4g?autoplay=1&loop=1&playlist=2Vv-BfVoq4g&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3'
+            },
+            {
+                type: 'youtube',
+                name: '🌟 Counting Stars - OneRepublic',
+                url: 'https://www.youtube.com/embed/hT_nvWreIhg?autoplay=1&loop=1&playlist=hT_nvWreIhg&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3'
+            },
+            {
+                type: 'youtube',
+                name: '🎤 Shape of You - Ed Sheeran',
+                url: 'https://www.youtube.com/embed/JGwWNGJdvx8?autoplay=1&loop=1&playlist=JGwWNGJdvx8&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3'
+            },
+            {
+                type: 'youtube',
+                name: '🎼 Chill Lofi Birthday Mix',
+                url: 'https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&loop=1&playlist=jfKfPfyJRdk&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3'
             }
         ];
 
@@ -2123,8 +2230,8 @@
                 setTimeout(() => {
                     if (musicStarted) {
                         const sourceName = musicSources[currentSourceIndex].name;
-                        button.textContent = `🎵 ${sourceName} 🎵`;
-                        document.getElementById('nextMusicButton').style.display = 'block';
+                        button.textContent = `🎵 ${sourceName}`;
+                        document.getElementById('musicControlsExtra').style.display = 'block';
                     }
                 }, 3000);
                 
@@ -2139,9 +2246,10 @@
                 if (musicLoopTimeout) clearTimeout(musicLoopTimeout);
                 if (speechSynthesis) speechSynthesis.cancel();
                 
-                button.textContent = '🎵 Bấm để phát nhạc Happy Birthday! 🎵';
+                button.textContent = '🎵 Bấm để phát nhạc sinh nhật! 🎵';
                 button.classList.remove('playing');
-                document.getElementById('nextMusicButton').style.display = 'none';
+                document.getElementById('musicControlsExtra').style.display = 'none';
+                closeMusicList();
                 console.log('🎵 Music stopped by user');
             }
         }
@@ -2166,6 +2274,70 @@
                 }
             }, 2000);
         }
+
+        // Show music selection modal
+        function showMusicList() {
+            const modal = document.getElementById('musicModal');
+            const musicList = document.getElementById('musicList');
+            
+            // Clear existing list
+            musicList.innerHTML = '';
+            
+            // Create music items
+            musicSources.forEach((source, index) => {
+                const item = document.createElement('div');
+                item.className = 'music-item';
+                if (index === currentSourceIndex) {
+                    item.classList.add('active');
+                }
+                
+                item.innerHTML = source.name;
+                item.onclick = () => selectMusic(index);
+                
+                musicList.appendChild(item);
+            });
+            
+            modal.style.display = 'flex';
+        }
+
+        // Close music selection modal
+        function closeMusicList() {
+            document.getElementById('musicModal').style.display = 'none';
+        }
+
+        // Select specific music
+        function selectMusic(index) {
+            if (index === currentSourceIndex) {
+                closeMusicList();
+                return;
+            }
+            
+            currentSourceIndex = index;
+            
+            if (musicStarted) {
+                const button = document.getElementById('musicButton');
+                button.textContent = '🎵 Đang chuyển...';
+                
+                loadMusicSource(currentSourceIndex);
+                
+                setTimeout(() => {
+                    if (musicStarted) {
+                        const sourceName = musicSources[currentSourceIndex].name;
+                        button.textContent = `🎵 ${sourceName}`;
+                    }
+                }, 2000);
+            }
+            
+            closeMusicList();
+        }
+
+        // Close modal when clicking outside
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('musicModal');
+            if (event.target === modal) {
+                closeMusicList();
+            }
+        });
 
         function initMusic() {
             // Check speech synthesis support
