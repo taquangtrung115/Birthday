@@ -2303,29 +2303,7 @@
             }, 8000); // Resume after 8 seconds
         }
 
-        function toggleAutoAdvance() {
-            isPaused = !isPaused;
-            
-            // Visual feedback toast
-            const message = document.createElement('div');
-            message.style.cssText = `
-                position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-                background: rgba(0,0,0,0.8); color: white; padding: 10px 20px;
-                border-radius: 20px; z-index: 1000; font-size: 14px;
-                transition: opacity 0.3s ease; backdrop-filter: blur(10px);
-            `;
-            message.textContent = isPaused ? '⏸️ Slideshow Paused' : '▶️ Slideshow Resumed';
-            document.body.appendChild(message);
-            
-            setTimeout(() => {
-                message.style.opacity = '0';
-                setTimeout(() => {
-                    if (document.body.contains(message)) {
-                        document.body.removeChild(message);
-                    }
-                }, 300);
-            }, 1500);
-        }
+
 
         function createSlideIndicators() {
             const slides = document.querySelectorAll('.slide');
@@ -3236,11 +3214,7 @@
                     nextSlide();
                     pauseAutoAdvance();
                     break;
-                case 'p':
-                case 'P':
-                    e.preventDefault();
-                    toggleAutoAdvance();
-                    break;
+
             }
         });
 
