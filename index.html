@@ -1581,7 +1581,7 @@
         // Danh sách các định dạng ảnh được hỗ trợ (bao gồm HEIC của Apple)
         const supportedFormats = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'heic', 'heif', 'avif', 'tiff', 'tif'];
 
-        // Danh sách đầy đủ tất cả ảnh trong thư mục Image (42 files)
+        // DANH SÁCH CHÍNH XÁC tất cả 42 ảnh thực tế trong thư mục Image
         const possibleImages = [
             'beauty_1677765546034.JPG',
             'beauty_1677765551292.JPG',
@@ -1627,6 +1627,8 @@
             'IMG_9847.JPG',
             'received_345382977611525.jpeg'
         ];
+        
+        console.log(`📂 Initialized with ${possibleImages.length} known images`);
 
         // Kiểm tra browser có hỗ trợ HEIC không
         function checkHEICSupport() {
@@ -1693,14 +1695,39 @@
                         }
                     };
                     
-                    // Thử multiple path formats
+                    // Thử multiple path formats và case variations
                     const paths = [
                         imagePath,
                         `./${imagePath}`,
                         `/${imagePath}`,
                     ];
                     
-                    img.src = paths[Math.min(attempts - 1, paths.length - 1)];
+                    // Also try case variations if first attempts fail
+                    if (attempts > 1 && imagePath.includes('/')) {
+                        const fileName = imagePath.split('/').pop();
+                        const folderPath = imagePath.substring(0, imagePath.lastIndexOf('/') + 1);
+                        
+                        // Try lowercase extension
+                        const lowerExt = fileName.replace(/\.(JPG|JPEG|HEIC|PNG|GIF)$/i, (match) => match.toLowerCase());
+                        if (lowerExt !== fileName) {
+                            paths.push(folderPath + lowerExt);
+                        }
+                        
+                        // Try uppercase extension  
+                        const upperExt = fileName.replace(/\.(jpg|jpeg|heic|png|gif)$/i, (match) => match.toUpperCase());
+                        if (upperExt !== fileName) {
+                            paths.push(folderPath + upperExt);
+                        }
+                    }
+                    
+                    const pathIndex = Math.min(attempts - 1, paths.length - 1);
+                    img.src = paths[pathIndex];
+                    
+                    if (attempts === 1) {
+                        console.log(`🔍 Trying: ${img.src}`);
+                    } else {
+                        console.log(`🔄 Retry ${attempts}: ${img.src}`);
+                    }
                 }
                 
                 tryLoad();
@@ -1766,132 +1793,60 @@
             });
         }
 
-        // Hàm tự động phát hiện ảnh có sẵn với aggressive scanning
+        // Hàm tự động phát hiện ảnh có sẵn - OPTIMIZED VERSION
         async function detectAvailableImages() {
-            console.log('🔍 Đang quét tất cả ảnh trong thư mục Image...');
+            console.log('🔍 Đang load tất cả ảnh từ danh sách chính xác...');
             console.log('📁 Current URL:', window.location.href);
-            console.log('📂 Looking for images in "Image/" folder');
+            console.log(`📂 Checking ${possibleImages.length} known images in "Image/" folder`);
             
             const availableImages = [];
-            const checkedPaths = new Set();
             
-            // Test basic connectivity first
-            console.log('🧪 Testing image loading capability...');
-            const testResult = await checkImageExists('Image/beauty_1677765546034.JPG');
-            console.log('🧪 Test result for known image:', testResult);
+            // Test basic connectivity first với ảnh đầu tiên
+            console.log('🧪 Testing connectivity with first image...');
+            const firstImage = `Image/${possibleImages[0]}`;
+            const connectivityTest = await checkImageExists(firstImage);
+            console.log('🧪 Connectivity test result:', connectivityTest);
             
-            // Strategy 1: Check tất cả ảnh trong possibleImages  
-            console.log('📂 Checking known images...');
-            const knownPromises = possibleImages.map(async (imageName) => {
-                const imagePath = `Image/${imageName}`;
-                checkedPaths.add(imagePath);
-                const exists = await checkImageExists(imagePath);
-                return exists ? imagePath : null;
-            });
-            
-            const knownResults = await Promise.all(knownPromises);
-            knownResults.forEach(result => {
-                if (result) {
-                    availableImages.push(result);
-                    console.log(`✅ Known: ${result}`);
-                }
-            });
-            
-            // Strategy 2: Scan IMG patterns từ 0000 đến 9999
-            console.log('🔢 Scanning IMG patterns...');
-            const imgPatterns = [];
-            
-            // Scan IMG_xxxx patterns
-            for (let num = 0; num <= 9999; num += 23) { // Sample every 23 numbers
-                for (const ext of ['JPG', 'jpg', 'JPEG', 'jpeg', 'HEIC', 'heic']) {
-                    const filename = `IMG_${String(num).padStart(4, '0')}.${ext}`;
-                    const imagePath = `Image/${filename}`;
-                    if (!checkedPaths.has(imagePath)) {
-                        imgPatterns.push(imagePath);
-                        checkedPaths.add(imagePath);
-                    }
-                }
+            if (!connectivityTest) {
+                console.log('⚠️ Cannot load images - server/path issue');
+                return [];
             }
-
-            // Batch check IMG patterns (200 at a time)
-            const batchSize = 200;
-            for (let i = 0; i < imgPatterns.length; i += batchSize) {
-                const batch = imgPatterns.slice(i, i + batchSize);
-                const batchPromises = batch.map(async (imagePath) => {
+            
+            // Load tất cả ảnh từ danh sách chính xác (parallel batches)
+            console.log('📸 Loading all known images in parallel...');
+            const batchSize = 10;
+            
+            for (let i = 0; i < possibleImages.length; i += batchSize) {
+                const batch = possibleImages.slice(i, i + batchSize);
+                console.log(`📦 Processing batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(possibleImages.length/batchSize)}: ${batch.length} images`);
+                
+                const batchPromises = batch.map(async (imageName, index) => {
+                    const imagePath = `Image/${imageName}`;
                     const exists = await checkImageExists(imagePath);
-                    return exists ? imagePath : null;
+                    return { imagePath, exists, imageName, index: i + index };
                 });
                 
                 const batchResults = await Promise.all(batchPromises);
+                
                 batchResults.forEach(result => {
-                    if (result) {
-                        availableImages.push(result);
-                        console.log(`🎯 Pattern: ${result}`);
+                    if (result.exists) {
+                        availableImages.push(result.imagePath);
+                        console.log(`✅ [${result.index + 1}/42] ${result.imageName}`);
+                    } else {
+                        console.log(`❌ [${result.index + 1}/42] ${result.imageName} - not found`);
                     }
                 });
                 
                 // Progress update
-                if (i % (batchSize * 3) === 0) {
-                    console.log(`🔄 Scanned ${i + batchSize}/${imgPatterns.length} patterns, found ${availableImages.length} images`);
-                }
-            }
-            
-            // Strategy 3: Beauty và timestamp patterns  
-            console.log('💄 Scanning beauty patterns...');
-            const beautyPatterns = [];
-            const currentTime = Date.now();
-            
-            // Beauty files with timestamps around current time
-            for (let offset = -100000000; offset <= 100000000; offset += 5000000) {
-                const timestamp = currentTime + offset;
-                for (const ext of ['JPG', 'jpg']) {
-                    const filename = `beauty_${timestamp}.${ext}`;
-                    const imagePath = `Image/${filename}`;
-                    if (!checkedPaths.has(imagePath)) {
-                        beautyPatterns.push(imagePath);
-                        checkedPaths.add(imagePath);
-                    }
-                }
-            }
-            
-            // Check beauty patterns
-            const beautyPromises = beautyPatterns.map(async (imagePath) => {
-                const exists = await checkImageExists(imagePath);
-                return exists ? imagePath : null;
-            });
-            
-            const beautyResults = await Promise.all(beautyPromises);
-            beautyResults.forEach(result => {
-                if (result) {
-                    availableImages.push(result);
-                    console.log(`💫 Beauty: ${result}`);
-                }
-            });
-            
-            // Strategy 4: Date-based patterns
-            console.log('📅 Scanning date patterns...');
-            const datePatterns = [];
-            
-            // IMG_YYYYMMDD patterns
-            for (let year = 2020; year <= 2025; year++) {
-                for (let month = 1; month <= 12; month += 3) {
-                    for (let day = 1; day <= 31; day += 10) {
-                        const dateStr = `${year}${String(month).padStart(2, '0')}${String(day).padStart(2, '0')}`;
-                        for (const ext of ['jpg', 'jpeg', 'JPG', 'JPEG']) {
-                            const filename = `IMG_${dateStr}_*.${ext}`;
-                            const imagePath = `Image/${filename}`;
-                            if (!checkedPaths.has(imagePath)) {
-                                datePatterns.push(imagePath);
-                                checkedPaths.add(imagePath);
-                            }
-                        }
-                    }
+                console.log(`📊 Progress: ${availableImages.length}/${possibleImages.length} images found`);
+                
+                // Small delay between batches to prevent overwhelming
+                if (i + batchSize < possibleImages.length) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
                 }
             }
 
-            console.log(`🎊 Scan hoàn tất! Tìm thấy ${availableImages.length} ảnh`);
-            
-            // Remove duplicates and sort
+            console.log(`🎊 Scan completed! Found ${availableImages.length}/${possibleImages.length} images`);            // Remove duplicates and sort
             const uniqueImages = [...new Set(availableImages)];
             
             // Nếu không tìm thấy ảnh nào, thêm fallback placeholder images
@@ -1917,19 +1872,19 @@
                 }
             }
             
-            // Giới hạn số lượng ảnh để tối ưu performance (max 15-20 ảnh)
-            const maxImages = 20;
-            const optimizedImages = uniqueImages.length > maxImages 
-                ? uniqueImages.slice(0, maxImages)
-                : uniqueImages;
-                
-            if (uniqueImages.length > maxImages) {
-                console.log(`⚡ Tối ưu performance: Giới hạn từ ${uniqueImages.length} → ${maxImages} ảnh`);
+            // Hiển thị TẤT CẢ ảnh found (không giới hạn)
+            const maxImages = 42; // Support all images in folder
+            console.log(`📷 Slideshow sẽ sử dụng TẤT CẢ ${uniqueImages.length} ảnh`);
+            
+            if (uniqueImages.length === 0) {
+                console.log('⚠️ No images found, check Image folder or use fallbacks');
+            } else if (uniqueImages.length === possibleImages.length) {
+                console.log('🎉 SUCCESS: Loaded ALL 42 images from folder!');
+            } else {
+                console.log(`⚡ Loaded ${uniqueImages.length}/${possibleImages.length} images`);
             }
             
-            console.log(`📷 Slideshow sẽ sử dụng: ${optimizedImages.length} ảnh`);
-            
-            return optimizedImages;
+            return uniqueImages; // Return all found images
         }
 
         // Tạo slideshow với lazy loading
