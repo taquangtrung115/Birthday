@@ -1743,10 +1743,11 @@
             }
         });
 
-        // Happy Birthday Music with Web Audio API (Always works!)
+        // Happy Birthday Music - Multiple Methods for Maximum Compatibility
         let audioContext = null;
         let musicStarted = false;
         let musicLoopTimeout = null;
+        let speechSupported = false;
 
         function createAudioContext() {
             if (!audioContext) {
@@ -1839,39 +1840,144 @@
             }
         }
 
-        function initMusic() {
-            const startMusic = () => {
-                if (!musicStarted) {
+        // Speech synthesis Happy Birthday (Fallback method)
+        function speakHappyBirthday() {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance();
+                utterance.text = "♪ Happy birthday to you! Happy birthday to you! Happy birthday dear friend! Happy birthday to you! ♪";
+                utterance.rate = 0.8;
+                utterance.pitch = 1.2;
+                utterance.volume = 0.6;
+                
+                // Try to get a nice voice
+                const voices = speechSynthesis.getVoices();
+                const femaleVoice = voices.find(voice => 
+                    voice.name.includes('Female') || 
+                    voice.name.includes('Zira') || 
+                    voice.name.includes('Samantha')
+                );
+                if (femaleVoice) {
+                    utterance.voice = femaleVoice;
+                }
+
+                utterance.onend = () => {
+                    if (musicStarted) {
+                        setTimeout(speakHappyBirthday, 3000); // Repeat after 3 seconds
+                    }
+                };
+
+                speechSynthesis.speak(utterance);
+                console.log('🎵 Happy Birthday speech started!');
+                return true;
+            }
+            return false;
+        }
+
+        // Simple beep sounds as another fallback
+        function createBeepSounds() {
+            const beepPattern = [800, 800, 900, 800, 1000, 950, 800, 800, 900, 800, 1100, 1000];
+            let beepIndex = 0;
+
+            function playBeep() {
+                if (beepIndex < beepPattern.length && musicStarted) {
                     try {
                         const ctx = createAudioContext();
+                        const oscillator = ctx.createOscillator();
+                        const gainNode = ctx.createGain();
                         
-                        // Resume context if suspended (required by some browsers)
+                        oscillator.connect(gainNode);
+                        gainNode.connect(ctx.destination);
+                        
+                        oscillator.frequency.setValueAtTime(beepPattern[beepIndex], ctx.currentTime);
+                        oscillator.type = 'sine';
+                        
+                        gainNode.gain.setValueAtTime(0, ctx.currentTime);
+                        gainNode.gain.linearRampToValueAtTime(0.1, ctx.currentTime + 0.01);
+                        gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.3);
+                        
+                        oscillator.start(ctx.currentTime);
+                        oscillator.stop(ctx.currentTime + 0.3);
+                        
+                        beepIndex++;
+                        setTimeout(playBeep, 500);
+                    } catch (e) {
+                        console.log('🎵 Beep failed:', e);
+                    }
+                } else if (musicStarted) {
+                    beepIndex = 0;
+                    setTimeout(playBeep, 2000);
+                }
+            }
+            
+            playBeep();
+        }
+
+        function initMusic() {
+            // Check speech synthesis support
+            speechSupported = 'speechSynthesis' in window;
+            
+            const startMusic = () => {
+                if (!musicStarted) {
+                    musicStarted = true;
+                    console.log('🎵 Starting music with multiple methods...');
+                    
+                    let musicMethod = 0;
+                    
+                    // Method 1: Try Web Audio API
+                    try {
+                        const ctx = createAudioContext();
                         if (ctx.state === 'suspended') {
                             ctx.resume().then(() => {
-                                musicStarted = true;
                                 playHappyBirthdayMelody();
-                                console.log('🎵 Happy Birthday music started!');
+                                console.log('🎵 Web Audio API started!');
+                                musicMethod = 1;
+                            }).catch(() => {
+                                console.log('🎵 Web Audio failed, trying speech...');
+                                if (speakHappyBirthday()) {
+                                    musicMethod = 2;
+                                } else {
+                                    createBeepSounds();
+                                    musicMethod = 3;
+                                }
                             });
                         } else {
-                            musicStarted = true;
                             playHappyBirthdayMelody();
-                            console.log('🎵 Happy Birthday music started!');
+                            console.log('🎵 Web Audio API started!');
+                            musicMethod = 1;
                         }
                     } catch (error) {
-                        console.log('🎵 Web Audio not supported:', error);
+                        console.log('🎵 Web Audio not supported, trying speech...');
+                        // Method 2: Speech Synthesis
+                        if (speakHappyBirthday()) {
+                            musicMethod = 2;
+                        } else {
+                            // Method 3: Simple beeps
+                            console.log('🎵 Using beep sounds...');
+                            createBeepSounds();
+                            musicMethod = 3;
+                        }
                     }
+                    
+                    // Show user what method is being used
+                    setTimeout(() => {
+                        const methods = ['', 'Instrumental melody', 'Sung Happy Birthday', 'Musical beeps'];
+                        if (methods[musicMethod]) {
+                            console.log(`🎵 Playing: ${methods[musicMethod]}`);
+                        }
+                    }, 1000);
                 }
                 
                 document.removeEventListener('click', startMusic);
                 document.removeEventListener('touchstart', startMusic);
             };
             
-            // Start music after a short delay
-            setTimeout(startMusic, 1500);
-            
-            // Also ensure it starts on any user interaction
+            // Start music immediately and on interaction
+            setTimeout(startMusic, 1000);
             document.addEventListener('click', startMusic);
             document.addEventListener('touchstart', startMusic);
+            
+            // Also try on page focus
+            window.addEventListener('focus', startMusic);
         }
 
         // Khởi tạo với optimized loading
