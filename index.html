@@ -1892,11 +1892,11 @@
                     // Load first image immediately for instant display
                     slide.classList.add('active');
                     loadImageToSlide(slide, imagePath, index);
-                } else if (index === 1 || index === 2) {
-                    // Preload next 2 images in background
+                } else if (index <= 2) {
+                    // Preload next 2 images with slight delay (non-blocking)
                     setTimeout(() => {
                         loadImageToSlide(slide, imagePath, index);
-                    }, index * 200);
+                    }, 100 + (index * 100));
                 } else {
                     // Other images: add placeholder and observe
                     const placeholder = document.createElement('div');
@@ -2698,31 +2698,36 @@
             slideshow.style.cursor = 'grab';
         }
 
-        // OPTIMIZED: Khởi tạo nhanh với instant loading
-        window.addEventListener('load', async function() {
-            resizeCanvas();
+        // OPTIMIZED: Khởi tạo nhanh với instant loading - defer heavy animations
+        window.addEventListener('DOMContentLoaded', function() {
+            // Create slideshow immediately on DOM ready (before all resources load)
+            showLoadingOverlay();
+            updateLoadingText('Đang tải ảnh...');
+            createSlideshow();
             
-            // Bắt đầu effects ngay lập tức
+            // Start slideshow features
+            if (images.length > 1) {
+                createSlideIndicators();
+                addTouchSupport();
+            }
+        });
+        
+        window.addEventListener('load', async function() {
+            // Initialize canvas and animations after page load
+            resizeCanvas();
             animate();
+            
+            // Start auto-advance after page is ready
+            if (images.length > 1) {
+                startAutoAdvance();
+            }
+            
+            // Defer heavy effects to not block page load
             setTimeout(() => {
                 for (let i = 0; i < 2; i++) {
                     setTimeout(createFirework, i * 300);
                 }
             }, 500);
-            
-            // OPTIMIZED: Skip slow detection - create slideshow immediately
-            showLoadingOverlay();
-            updateLoadingText('Đang tải ảnh...');
-            
-            // Create slideshow instantly with all images
-            createSlideshow();
-            
-            // Chỉ bắt đầu slideshow nếu có ảnh
-            if (images.length > 1) {
-                startAutoAdvance();
-                createSlideIndicators();
-                addTouchSupport();
-            }
             
             // Bắt đầu animation pháo hoa
             animate();
