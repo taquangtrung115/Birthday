@@ -8,7 +8,10 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>🎉 Chúc Mừng Sinh Nhật! 🎂</title>
     
-    <!-- Preload first image for instant display -->
+    <!-- Preload first image for instant display - WebP for mobile -->
+    <link rel="preload" as="image" href="Image/beauty_1677765546034-mobile.webp" fetchpriority="high" media="(max-width: 800px)" type="image/webp">
+    <link rel="preload" as="image" href="Image/beauty_1677765546034.webp" fetchpriority="high" media="(min-width: 801px)" type="image/webp">
+    <!-- Fallback for browsers without WebP support -->
     <link rel="preload" as="image" href="Image/beauty_1677765546034.JPG" fetchpriority="high">
     
     <!-- DNS Prefetch for external resources -->
@@ -1725,6 +1728,38 @@
         // In-memory cache for loaded images
         const imageCache = new Map();
         
+        // Detect WebP support
+        let supportsWebP = false;
+        (function checkWebPSupport() {
+            const webpTestImage = 'data:image/webp;base64,UklGRiQAAABXRUJQVlA4IBgAAAAwAQCdASoBAAEAAwA0JaQAA3AA/vuUAAA=';
+            const img = new Image();
+            img.onload = img.onerror = function() {
+                supportsWebP = (img.height === 1);
+                console.log('WebP support:', supportsWebP);
+            };
+            img.src = webpTestImage;
+        })();
+        
+        // Detect device type and connection
+        const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isTablet = /(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(navigator.userAgent);
+        const screenWidth = window.innerWidth;
+        
+        // Detect connection speed
+        let connectionType = 'fast';
+        if ('connection' in navigator) {
+            const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+            if (conn) {
+                const effectiveType = conn.effectiveType;
+                if (effectiveType === 'slow-2g' || effectiveType === '2g') {
+                    connectionType = 'slow';
+                } else if (effectiveType === '3g') {
+                    connectionType = 'medium';
+                }
+                console.log('Connection type:', effectiveType);
+            }
+        }
+        
         // Intersection Observer for lazy loading
         let imageObserver = null;
         if ('IntersectionObserver' in window) {
@@ -1744,7 +1779,8 @@
                     }
                 });
             }, {
-                rootMargin: '200px', // Preload images 200px before they're visible
+                // Adjust preload distance based on connection
+                rootMargin: connectionType === 'slow' ? '100px' : '200px',
                 threshold: 0.01
             });
         }
@@ -1935,11 +1971,37 @@
             }, 800);
         }
 
-        // OPTIMIZED: Load ảnh vào slide với caching
+        // Get responsive image path based on device and format support
+        function getResponsiveImagePath(imagePath) {
+            const pathParts = imagePath.split('.');
+            const extension = pathParts.pop();
+            const basePath = pathParts.join('.');
+            
+            // Determine best size for device
+            let sizeSuffix = '';
+            if (screenWidth <= 800 || isMobileDevice) {
+                sizeSuffix = '-mobile';
+            } else if (screenWidth <= 1200 || isTablet) {
+                sizeSuffix = '-tablet';
+            }
+            
+            // Prefer WebP if supported, fallback to original
+            if (supportsWebP) {
+                return `${basePath}${sizeSuffix}.webp`;
+            } else {
+                // For JPEG fallback, only mobile/tablet variants exist in WebP
+                // So we use original for all sizes
+                return imagePath;
+            }
+        }
+        
+        // OPTIMIZED: Load ảnh vào slide với responsive images và WebP support
         function loadImageToSlide(slide, imagePath, index, retryCount = 0) {
+            const cacheKey = imagePath + (supportsWebP ? '-webp' : '') + `-${screenWidth}`;
+            
             // Check if image is already cached
-            if (imageCache.has(imagePath)) {
-                const cachedImg = imageCache.get(imagePath).cloneNode();
+            if (imageCache.has(cacheKey)) {
+                const cachedImg = imageCache.get(cacheKey).cloneNode();
                 cachedImg.style.cssText = `
                     width: 100%; height: 100%; object-fit: contain; 
                     opacity: 1; border-radius: 12px;
@@ -1956,7 +2018,42 @@
             }
             
             const maxRetries = 2;
+            
+            // Use picture element for responsive images with WebP support
+            const picture = document.createElement('picture');
+            
+            // Get base path without extension
+            const pathParts = imagePath.split('.');
+            const extension = pathParts.pop();
+            const basePath = pathParts.join('.');
+            
+            // Add WebP sources with different sizes
+            if (supportsWebP) {
+                // Mobile WebP source
+                const sourceMobile = document.createElement('source');
+                sourceMobile.srcset = `${basePath}-mobile.webp`;
+                sourceMobile.media = '(max-width: 800px)';
+                sourceMobile.type = 'image/webp';
+                picture.appendChild(sourceMobile);
+                
+                // Tablet WebP source
+                const sourceTablet = document.createElement('source');
+                sourceTablet.srcset = `${basePath}-tablet.webp`;
+                sourceTablet.media = '(max-width: 1200px)';
+                sourceTablet.type = 'image/webp';
+                picture.appendChild(sourceTablet);
+                
+                // Desktop WebP source
+                const sourceDesktop = document.createElement('source');
+                sourceDesktop.srcset = `${basePath}.webp`;
+                sourceDesktop.type = 'image/webp';
+                picture.appendChild(sourceDesktop);
+            }
+            
+            // Fallback img element (original JPEG)
             const img = document.createElement('img');
+            img.src = imagePath;
+            img.alt = `Ảnh sinh nhật ${index + 1}`;
             img.style.cssText = `
                 width: 100%; height: 100%; object-fit: contain; 
                 opacity: 0; transition: opacity 0.3s ease;
@@ -1969,7 +2066,7 @@
             
             img.onload = function() {
                 // Cache the loaded image
-                imageCache.set(imagePath, this.cloneNode());
+                imageCache.set(cacheKey, this.cloneNode());
                 
                 // Fade in effect
                 requestAnimationFrame(() => {
@@ -1990,7 +2087,7 @@
                 if (retryCount < maxRetries - 1) {
                     // Retry with delay
                     setTimeout(() => {
-                        slide.removeChild(this);
+                        slide.removeChild(picture);
                         loadImageToSlide(slide, imagePath, index, retryCount + 1);
                     }, 500 * (retryCount + 1));
                 } else {
@@ -2011,11 +2108,12 @@
             };
             
             // No cache busting unless retrying
-            const cacheBuster = retryCount > 0 ? `?retry=${retryCount}` : '';
-            img.src = imagePath + cacheBuster;
-            img.alt = `Ảnh sinh nhật ${index + 1}`;
+            if (retryCount > 0) {
+                img.src = imagePath + `?retry=${retryCount}`;
+            }
             
-            slide.appendChild(img);
+            picture.appendChild(img);
+            slide.appendChild(picture);
         }
 
         // Loading overlay management
@@ -2700,9 +2798,18 @@
 
         // OPTIMIZED: Khởi tạo nhanh với instant loading - defer heavy animations
         window.addEventListener('DOMContentLoaded', function() {
+            // Show connection info to user if slow
+            if (connectionType === 'slow') {
+                updateLoadingText('📱 Kết nối chậm - Đang tải ảnh tối ưu cho mobile...');
+                console.log('Slow connection detected - using optimized mobile images');
+            } else if (connectionType === 'medium') {
+                updateLoadingText('📱 Đang tải ảnh được tối ưu...');
+            } else {
+                updateLoadingText('🎨 Đang tải ảnh...');
+            }
+            
             // Create slideshow immediately on DOM ready (before all resources load)
             showLoadingOverlay();
-            updateLoadingText('Đang tải ảnh...');
             createSlideshow();
             
             // Start slideshow features

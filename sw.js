@@ -1,6 +1,6 @@
 // Service Worker for Birthday Page - Image Caching Optimization
-const CACHE_NAME = 'birthday-images-v2';
-const IMAGE_CACHE_NAME = 'birthday-images-store-v2';
+const CACHE_NAME = 'birthday-images-v3';
+const IMAGE_CACHE_NAME = 'birthday-images-store-v3';
 
 // Cache all images on install
 self.addEventListener('install', (event) => {
