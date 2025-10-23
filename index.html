@@ -7,6 +7,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>🎉 Chúc Mừng Sinh Nhật! 🎂</title>
+    
+    <!-- Preload first image for instant display -->
+    <link rel="preload" as="image" href="Image/beauty_1677765546034.JPG" imagesrcset="Image/beauty_1677765546034.JPG 1x" imagesizes="100vw">
+    
+    <!-- DNS Prefetch for external resources -->
+    <link rel="dns-prefetch" href="https://picsum.photos">
+    
     <style>
         * {
             margin: 0;
@@ -407,6 +414,8 @@
             will-change: transform;
             image-rendering: -webkit-optimize-contrast;
             image-rendering: crisp-edges;
+            /* Enable browser-level caching */
+            image-orientation: from-image;
         }
 
         .slide img:hover {
@@ -1709,14 +1718,60 @@
     </div>
 
     <script>
-        // Tự động phát hiện ảnh trong thư mục Image
+        // === OPTIMIZED IMAGE LOADING SYSTEM ===
         let images = [];
         let currentSlide = 0;
+        
+        // In-memory cache for loaded images
+        const imageCache = new Map();
+        
+        // Intersection Observer for lazy loading
+        let imageObserver = null;
+        if ('IntersectionObserver' in window) {
+            imageObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const slide = entry.target;
+                        const imagePath = slide.dataset.imagePath;
+                        const index = slide.dataset.imageIndex;
+                        
+                        if (imagePath && slide.querySelector('.image-placeholder')) {
+                            loadImageToSlide(slide, imagePath, parseInt(index));
+                        }
+                        
+                        // Stop observing once loaded
+                        imageObserver.unobserve(slide);
+                    }
+                });
+            }, {
+                rootMargin: '200px', // Preload images 200px before they're visible
+                threshold: 0.01
+            });
+        }
+        
+        // Register Service Worker for caching
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then((registration) => {
+                        console.log('✅ Service Worker registered for image caching');
+                        
+                        // Pre-cache all images after registration
+                        setTimeout(() => {
+                            if (registration.active) {
+                                registration.active.postMessage({
+                                    type: 'CACHE_IMAGES',
+                                    images: images
+                                });
+                            }
+                        }, 2000);
+                    })
+                    .catch((error) => {
+                        console.log('⚠️ Service Worker registration failed:', error);
+                    });
+            });
+        }
 
-        // Danh sách các định dạng ảnh được hỗ trợ (bao gồm HEIC của Apple)
-        const supportedFormats = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'heic', 'heif', 'avif', 'tiff', 'tif'];
-
-        // DANH SÁCH CHÍNH XÁC tất cả 39 ảnh hiện tại trong thư mục Image  
         // Danh sách tất cả ảnh hiện có (chỉ JPG/JPEG/WEBP)
         const possibleImages = [
             'beauty_1677765546034.JPG',
@@ -1748,8 +1803,42 @@
             'received_345382977611525.jpeg'
         ];
         
-        // Slideshow initialized with images
+        // Initialize all images immediately - they exist in the Image folder
+        images = possibleImages.map(img => `Image/${img}`);
 
+        // Optimized - fast image precheck (optional, all images should exist)
+        function checkImageExists(imagePath) {
+            return new Promise((resolve) => {
+                // Check cache first
+                if (imageCache.has(imagePath)) {
+                    resolve(true);
+                    return;
+                }
+                
+                const img = new Image();
+                const timeout = setTimeout(() => resolve(false), 400);
+                
+                img.onload = () => {
+                    clearTimeout(timeout);
+                    imageCache.set(imagePath, img);
+                    resolve(true);
+                };
+                
+                img.onerror = () => {
+                    clearTimeout(timeout);
+                    resolve(false);
+                };
+                
+                img.src = imagePath;
+            });
+        }
+
+        // Fast detection - all images assumed to exist
+        async function detectAvailableImages() {
+            // Skip detection entirely - return all images immediately
+            return images;
+        }
+        
         // Kiểm tra browser có hỗ trợ HEIC không
         function checkHEICSupport() {
             return new Promise((resolve) => {
@@ -1768,269 +1857,22 @@
             });
         }
 
-        // Hàm kiểm tra file ảnh có tồn tại không với debug chi tiết
-        function checkImageExists(imagePath, retries = 1) {
-            return new Promise((resolve) => {
-                let attempts = 0;
-                
-                function tryLoad() {
-                    attempts++;
-                    const img = new Image();
-                    let resolved = false;
-                    
-                    // Timeout ngắn hơn để tăng tốc
-                    const timeout = setTimeout(() => {
-                        if (!resolved) {
-                            resolved = true;
-                            if (attempts < retries) {
-                                setTimeout(tryLoad, 50);
-                            } else {
-                                resolve(false);
-                            }
-                        }
-                    }, 1000);
-                    
-                    img.onload = () => {
-                        if (!resolved) {
-                            resolved = true;
-                            clearTimeout(timeout);
-                            resolve(true);
-                        }
-                    };
-                    
-                    img.onerror = () => {
-                        if (!resolved) {
-                            resolved = true;
-                            clearTimeout(timeout);
-                            if (attempts < retries) {
-                                setTimeout(tryLoad, 50);
-                            } else {
-                                resolve(false);
-                            }
-                        }
-                    };
-                    
-                    // Thử multiple path formats và case variations
-                    const paths = [
-                        imagePath,
-                        `./${imagePath}`,
-                        `/${imagePath}`,
-                    ];
-                    
-                    // Also try case variations if first attempts fail
-                    if (attempts > 1 && imagePath.includes('/')) {
-                        const fileName = imagePath.split('/').pop();
-                        const folderPath = imagePath.substring(0, imagePath.lastIndexOf('/') + 1);
-                        
-                        // Try lowercase extension
-                        const lowerExt = fileName.replace(/\.(JPG|JPEG|HEIC|PNG|GIF)$/i, (match) => match.toLowerCase());
-                        if (lowerExt !== fileName) {
-                            paths.push(folderPath + lowerExt);
-                        }
-                        
-                        // Try uppercase extension  
-                        const upperExt = fileName.replace(/\.(jpg|jpeg|heic|png|gif)$/i, (match) => match.toUpperCase());
-                        if (upperExt !== fileName) {
-                            paths.push(folderPath + upperExt);
-                        }
-                    }
-                    
-                    const pathIndex = Math.min(attempts - 1, paths.length - 1);
-                    img.src = paths[pathIndex];
-                    
-                    // Silent loading for better UX
-                }
-                
-                tryLoad();
-            });
-        }
-
-        // Optimize và resize ảnh để tăng performance
-        function optimizeImage(img, maxWidth = 800, maxHeight = 600, quality = 0.85) {
-            return new Promise((resolve) => {
-                // Nếu ảnh đã nhỏ, không cần resize
-                if (img.naturalWidth <= maxWidth && img.naturalHeight <= maxHeight) {
-                    resolve(img.src);
-                    return;
-                }
-                
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                
-                // Tính toán kích thước mới giữ tỷ lệ
-                const ratio = Math.min(maxWidth / img.naturalWidth, maxHeight / img.naturalHeight);
-                canvas.width = img.naturalWidth * ratio;
-                canvas.height = img.naturalHeight * ratio;
-                
-                // Vẽ ảnh với kích thước mới
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                
-                // Convert to optimized blob
-                canvas.toBlob((blob) => {
-                    const optimizedUrl = URL.createObjectURL(blob);
-                    resolve(optimizedUrl);
-                }, 'image/jpeg', quality);
-            });
-        }
-
-        // Preload ảnh với priority và optimization
-        function preloadImage(src, priority = 'low') {
-            return new Promise((resolve) => {
-                const img = new Image();
-                
-                img.onload = async () => {
-                    try {
-                        // Optimize ảnh nếu quá lớn
-                        const optimizedSrc = await optimizeImage(img);
-                        resolve({
-                            original: img,
-                            optimizedSrc: optimizedSrc,
-                            isOptimized: optimizedSrc !== img.src
-                        });
-                    } catch (error) {
-                        console.log('Optimization failed, using original:', src);
-                        resolve({ original: img, optimizedSrc: img.src, isOptimized: false });
-                    }
-                };
-                
-                img.onerror = () => resolve(null);
-                
-                // Set loading priority
-                if ('loading' in img) {
-                    img.loading = priority === 'high' ? 'eager' : 'lazy';
-                }
-                
-                img.src = src;
-            });
-        }
-
-        // Hàm tự động phát hiện ảnh có sẵn - OPTIMIZED VERSION
-        async function detectAvailableImages() {
-            const availableImages = [];
-            
-            // Load tất cả ảnh (đều là JPG/JPEG/WEBP - được hỗ trợ rộng rãi)
-            const batchSize = 8;
-            for (let i = 0; i < possibleImages.length; i += batchSize) {
-                const batch = possibleImages.slice(i, i + batchSize);
-                const batchPromises = batch.map(async (imageName) => {
-                    const imagePath = `Image/${imageName}`;
-                    const exists = await checkImageExists(imagePath, 2);
-                    return { imagePath, exists, imageName };
-                });
-                
-                const batchResults = await Promise.all(batchPromises);
-                batchResults.forEach(result => {
-                    if (result.exists) {
-                        availableImages.push(result.imagePath);
-                    }
-                });
-                
-                // Small delay between batches
-                if (i + batchSize < possibleImages.length) {
-                    await new Promise(resolve => setTimeout(resolve, 50));
-                }
-            }
-            
-            // Remove duplicates and sort
-            const uniqueImages = [...new Set(availableImages)];
-            
-            // Nếu không tìm thấy ảnh nào, thêm fallback placeholder images
-            if (uniqueImages.length === 0) {
-
-                
-                const fallbackImages = [
-                    'https://picsum.photos/800/600?random=1',
-                    'https://picsum.photos/800/600?random=2', 
-                    'https://picsum.photos/800/600?random=3',
-                    'https://picsum.photos/800/600?random=4',
-                    'https://picsum.photos/800/600?random=5'
-                ];
-                
-                // Test fallback connectivity
-                const fallbackTest = await checkImageExists(fallbackImages[0]);
-                if (fallbackTest) {
-
-                    return fallbackImages;
-                } else {
-
-                    return [];
-                }
-            }
-            
-            // Hiển thị TẤT CẢ ảnh found (không giới hạn)
-            const maxImages = 26; // Support all 26 JPG/JPEG/WEBP images
-            
-            return uniqueImages; // Return all found images
-        }
-
-        // Tạo slideshow với lazy loading
+        // Tạo slideshow với lazy loading OPTIMIZED
         function createSlideshow() {
             const slideshowContainer = document.getElementById('slideshow');
             
             if (images.length === 0) {
-                // Hiển thị thông báo debug chi tiết
+                // Hiển thị thông báo
                 const noImageSlide = document.createElement('div');
                 noImageSlide.className = 'slide active';
-                
-                // Enhanced debug info
-                const debugInfo = {
-                    totalPossibleImages: possibleImages.length,
-                    browserSupportsHEIC: 'unknown',
-                    imageFormatsSupported: supportedFormats.join(', '),
-                    currentPath: window.location.href,
-                    timestamp: new Date().toLocaleString(),
-                    protocol: window.location.protocol,
-                    hostname: window.location.hostname,
-                    port: window.location.port,
-                    isLocalhost: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1',
-                    imageFolder: 'Image/',
-                    sampleImagePaths: [
-                        'Image/beauty_1677765546034.JPG',
-                        'Image/IMG_0023.JPG', 
-                        'Image/IMG_1427.JPG'
-                    ]
-                };
-                
                 noImageSlide.innerHTML = `
                     <div style="display: flex; justify-content: center; align-items: center; height: 100%; 
                                background: linear-gradient(45deg, #ff6b6b, #4ecdc4); color: white; 
-                               font-size: 1rem; text-align: center; padding: 20px; line-height: 1.6;">
+                               font-size: 1rem; text-align: center; padding: 20px;">
                         <div>
-                            <div style="font-size: 3rem; margin-bottom: 15px;">�</div>
+                            <div style="font-size: 3rem; margin-bottom: 15px;">📸</div>
                             <div style="font-size: 1.3rem; margin-bottom: 15px; font-weight: bold;">
-                                Không tìm thấy ảnh nào trong thư mục Image
-                            </div>
-                            <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; margin: 15px 0;">
-                                <div style="font-weight: bold; margin-bottom: 8px;">🐛 Debug Info:</div>
-                                <div style="font-size: 0.85rem; text-align: left; line-height: 1.4;">
-                                    • Đã kiểm tra: ${debugInfo.totalPossibleImages} files<br>
-                                    • Path hiện tại: ${debugInfo.currentPath}<br>
-                                    • Server: ${debugInfo.protocol}//${debugInfo.hostname}:${debugInfo.port}<br>
-                                    • Local server: ${debugInfo.isLocalhost ? 'Yes' : 'No'}<br>
-                                    • Image folder: "${debugInfo.imageFolder}"<br>
-                                    • Định dạng hỗ trợ: ${debugInfo.imageFormatsSupported}<br>
-                                    • Thời gian: ${debugInfo.timestamp}<br><br>
-                                    <strong>🔍 Sample paths being tested:</strong><br>
-                                    ${debugInfo.sampleImagePaths.map(path => `• ${path}`).join('<br>')}
-                                </div>
-                            </div>
-                            <div style="font-size: 0.95rem; margin-top: 15px; opacity: 0.9;">
-                                💡 <strong>Hướng dẫn khắc phục:</strong><br>
-                                1. Kiểm tra thư mục "Image" có tồn tại<br>
-                                2. Đảm bảo có ảnh với định dạng: JPG, JPEG, PNG, HEIC<br>
-                                3. Tên file không chứa ký tự đặc biệt<br>
-                                4. Khởi động website qua HTTP server (không mở file trực tiếp)
-                            </div>
-                            <div style="margin-top: 20px;">
-                                <button onclick="location.reload()" style="
-                                    background: rgba(255,255,255,0.2); 
-                                    border: 1px solid rgba(255,255,255,0.3);
-                                    color: white; 
-                                    padding: 10px 20px; 
-                                    border-radius: 25px;
-                                    cursor: pointer;
-                                    font-size: 0.9rem;
-                                ">🔄 Thử lại</button>
+                                Không tìm thấy ảnh
                             </div>
                         </div>
                     </div>
@@ -2039,7 +1881,7 @@
                 return;
             }
             
-            // Tạo slides với lazy loading
+            // OPTIMIZED: Tạo slides với lazy loading và IntersectionObserver
             images.forEach((imagePath, index) => {
                 const slide = document.createElement('div');
                 slide.className = 'slide';
@@ -2047,75 +1889,110 @@
                 slide.dataset.imageIndex = index;
                 
                 if (index === 0) {
+                    // Load first image immediately for instant display
                     slide.classList.add('active');
-                    // Load ảnh đầu tiên ngay lập tức
                     loadImageToSlide(slide, imagePath, index);
+                } else if (index === 1 || index === 2) {
+                    // Preload next 2 images in background
+                    setTimeout(() => {
+                        loadImageToSlide(slide, imagePath, index);
+                    }, index * 200);
                 } else {
-                    // Các ảnh khác sẽ được load khi cần
+                    // Other images: add placeholder and observe
                     const placeholder = document.createElement('div');
                     placeholder.className = 'image-placeholder';
                     placeholder.innerHTML = `
                         <div class="loading-spinner"></div>
                         <div class="image-skeleton"></div>
                         <div style="margin-top: 15px; font-size: 0.9rem; opacity: 0.8;">
-                            📸 Đang tải ảnh...
+                            📸 Đang tải...
                         </div>
                     `;
                     slide.appendChild(placeholder);
+                    
+                    // Observe for lazy loading
+                    if (imageObserver) {
+                        imageObserver.observe(slide);
+                    }
                 }
                 
                 slideshowContainer.appendChild(slide);
             });
 
-            // Hide loading overlay
+            // Hide loading overlay quickly
             setTimeout(() => {
                 hideLoadingOverlay();
-            }, 500);
+            }, 300);
             
-            // Create indicators after slides are created
+            // Create indicators
             setTimeout(() => {
                 createSlideIndicators();
-            }, 600);
+            }, 400);
             
-            // Preload 2-3 ảnh tiếp theo trong background
+            // Start background preloading of remaining images
             setTimeout(() => {
                 preloadNextImages();
-            }, 1200);
+            }, 800);
         }
 
-        // Load ảnh vào slide với retry mechanism
+        // OPTIMIZED: Load ảnh vào slide với caching
         function loadImageToSlide(slide, imagePath, index, retryCount = 0) {
-            const maxRetries = 3;
+            // Check if image is already cached
+            if (imageCache.has(imagePath)) {
+                const cachedImg = imageCache.get(imagePath).cloneNode();
+                cachedImg.style.cssText = `
+                    width: 100%; height: 100%; object-fit: contain; 
+                    opacity: 1; border-radius: 12px;
+                `;
+                cachedImg.alt = `Ảnh sinh nhật ${index + 1}`;
+                
+                // Remove placeholder
+                const placeholder = slide.querySelector('.image-placeholder');
+                if (placeholder) placeholder.remove();
+                
+                slide.appendChild(cachedImg);
+                slide.classList.add('image-loaded');
+                return;
+            }
             
+            const maxRetries = 2;
             const img = document.createElement('img');
             img.style.cssText = `
                 width: 100%; height: 100%; object-fit: contain; 
-                opacity: 0; transition: opacity 0.5s ease;
+                opacity: 0; transition: opacity 0.3s ease;
                 border-radius: 12px;
             `;
             
+            // Add loading attribute for browser-level lazy loading
+            img.loading = 'lazy';
+            img.decoding = 'async';
+            
             img.onload = function() {
+                // Cache the loaded image
+                imageCache.set(imagePath, this.cloneNode());
+                
                 // Fade in effect
-                this.style.opacity = '1';
+                requestAnimationFrame(() => {
+                    this.style.opacity = '1';
+                });
                 
                 // Remove placeholder if exists
                 const placeholder = slide.querySelector('.image-placeholder');
                 if (placeholder) {
                     placeholder.style.opacity = '0';
-                    setTimeout(() => placeholder.remove(), 500);
+                    setTimeout(() => placeholder.remove(), 300);
                 }
                 
-                // Add success class for analytics
                 slide.classList.add('image-loaded');
             };
             
             img.onerror = function() {
                 if (retryCount < maxRetries - 1) {
-                    // Retry with delay and cache busting
+                    // Retry with delay
                     setTimeout(() => {
                         slide.removeChild(this);
                         loadImageToSlide(slide, imagePath, index, retryCount + 1);
-                    }, 1000 * (retryCount + 1));
+                    }, 500 * (retryCount + 1));
                 } else {
                     // Final failure - show error message
                     const errorDiv = document.createElement('div');
@@ -2127,15 +2004,14 @@
                         </div>
                     `;
                     
-                    // Remove placeholder and add error
                     const placeholder = slide.querySelector('.image-placeholder');
                     if (placeholder) placeholder.remove();
                     slide.appendChild(errorDiv);
                 }
             };
             
-            // Add cache busting for retries
-            const cacheBuster = retryCount > 0 ? `?retry=${retryCount}&t=${Date.now()}` : '';
+            // No cache busting unless retrying
+            const cacheBuster = retryCount > 0 ? `?retry=${retryCount}` : '';
             img.src = imagePath + cacheBuster;
             img.alt = `Ảnh sinh nhật ${index + 1}`;
             
@@ -2822,7 +2698,7 @@
             slideshow.style.cursor = 'grab';
         }
 
-        // Khởi tạo với optimized loading
+        // OPTIMIZED: Khởi tạo nhanh với instant loading
         window.addEventListener('load', async function() {
             resizeCanvas();
             
@@ -2834,34 +2710,12 @@
                 }
             }, 500);
             
-
-            
-
-            
-            // Show slideshow với placeholder trước
+            // OPTIMIZED: Skip slow detection - create slideshow immediately
             showLoadingOverlay();
-            updateLoadingText('Khởi tạo slideshow...');
-            createSlideshow();
-            
-            // Tìm ảnh trong background
             updateLoadingText('Đang tải ảnh...');
-            detectAvailableImages().then(foundImages => {
-                if (foundImages.length > 0) {
-                    updateLoadingText(`Tìm thấy ${foundImages.length} ảnh, đang cập nhật...`);
-                    images = foundImages;
-                    
-                    // Recreate slideshow với ảnh thực
-                    const slideshowContainer = document.getElementById('slideshow');
-                    slideshowContainer.innerHTML = '';
-                    createSlideshow();
-                    
-                    updateLoadingText('Hoàn tất tải ảnh!');
-                    setTimeout(hideLoadingOverlay, 800);
-                } else {
-                    updateLoadingText('Sử dụng ảnh mẫu');
-                    setTimeout(hideLoadingOverlay, 800);
-                }
-            });
+            
+            // Create slideshow instantly with all images
+            createSlideshow();
             
             // Chỉ bắt đầu slideshow nếu có ảnh
             if (images.length > 1) {
