@@ -334,42 +334,47 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* Single Image Display */
-        .single-image-container {
+        /* Slideshow Slides */
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.8s ease-in-out, visibility 0.8s;
             border-radius: 20px;
             overflow: hidden;
             background: linear-gradient(135deg, 
-                rgba(255, 255, 255, 0.1) 0%, 
-                rgba(255, 255, 255, 0.05) 100%);
+                rgba(255, 255, 255, 0.05) 0%, 
+                rgba(255, 255, 255, 0.02) 100%);
         }
 
-        .single-image-container img {
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            z-index: 2;
+        }
+
+        .slide img {
             max-width: 100%;
             max-height: 100%;
-            width: auto;
-            height: auto;
+            width: 100%;
+            height: 100%;
             object-fit: contain;
             object-position: center;
             border-radius: 16px;
             box-shadow: 
                 0 8px 32px rgba(0, 0, 0, 0.3),
                 0 2px 8px rgba(0, 0, 0, 0.2);
-            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-            will-change: transform;
             image-rendering: -webkit-optimize-contrast;
             image-rendering: crisp-edges;
             image-orientation: from-image;
             display: block;
-            margin: auto;
-        }
-
-        .single-image-container img:hover {
-            transform: scale3d(1.02, 1.02, 1);
         }
 
         .image-placeholder {
@@ -1198,31 +1203,6 @@
         .slide-nav.next {
             right: 10px;
         }
-
-        /* Progress Bar Styles */
-        .slide-progress {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 0 0 20px 20px;
-            overflow: hidden;
-        }
-
-        .slide-progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, 
-                #ff6b6b 0%, 
-                #4ecdc4 25%, 
-                #45b7d1 50%, 
-                #96ceb4 75%, 
-                #feca57 100%);
-            width: 0%;
-            transition: width 0.3s ease;
-            border-radius: 0 0 20px 0;
-        }            .slide-indicators {
                 bottom: -35px;
             }
 
@@ -1731,9 +1711,8 @@
             'received_345382977611525.jpeg'
         ];
         
-        // Select a single image (first one or random)
-        const selectedImage = `Image/${possibleImages[0]}`;
-        images = [selectedImage];
+        // Load all images for slideshow
+        images = possibleImages.map(img => `Image/${img}`);
 
         // Optimized - fast image precheck (optional, all images should exist)
         function checkImageExists(imagePath) {
@@ -1779,14 +1758,18 @@
             });
         }
 
-        // Tạo single image display với lazy loading OPTIMIZED
+        // Tạo slideshow với lazy loading OPTIMIZED
+        let currentSlide = 0;
+        let slideInterval = null;
+        let slides = [];
+        
         function createSlideshow() {
             const slideshowContainer = document.getElementById('slideshow');
             
             if (images.length === 0) {
                 // Hiển thị thông báo
                 const noImageSlide = document.createElement('div');
-                noImageSlide.className = 'single-image-container';
+                noImageSlide.className = 'slide active';
                 noImageSlide.innerHTML = `
                     <div style="display: flex; justify-content: center; align-items: center; height: 100%; 
                                background: linear-gradient(45deg, #ff6b6b, #4ecdc4); color: white; 
@@ -1803,48 +1786,150 @@
                 return;
             }
             
-            // Create single image container
-            const imageContainer = document.createElement('div');
-            imageContainer.className = 'single-image-container';
-            
-            const imagePath = images[0];
-            loadImageToContainer(imageContainer, imagePath);
-            
-            slideshowContainer.appendChild(imageContainer);
+            // Create slides for all images
+            images.forEach((imagePath, index) => {
+                const slide = document.createElement('div');
+                slide.className = 'slide';
+                if (index === 0) slide.classList.add('active');
+                slide.dataset.imagePath = imagePath;
+                slide.dataset.imageIndex = index;
+                
+                // Create image placeholder
+                const placeholder = document.createElement('div');
+                placeholder.className = 'image-placeholder';
+                placeholder.innerHTML = `
+                    <div class="loading-spinner"></div>
+                    <div class="image-skeleton"></div>
+                `;
+                slide.appendChild(placeholder);
+                
+                slideshowContainer.appendChild(slide);
+                slides.push(slide);
+                
+                // Load first 3 images immediately, rest lazy
+                if (index < 3) {
+                    loadImageToSlide(slide, imagePath, index);
+                } else if (imageObserver) {
+                    imageObserver.observe(slide);
+                }
+            });
+
+            // Add navigation controls
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'slide-nav prev';
+            prevBtn.innerHTML = '❮';
+            prevBtn.onclick = () => changeSlide(-1);
+            slideshowContainer.appendChild(prevBtn);
+
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'slide-nav next';
+            nextBtn.innerHTML = '❯';
+            nextBtn.onclick = () => changeSlide(1);
+            slideshowContainer.appendChild(nextBtn);
+
+            // Add slide indicators
+            const indicators = document.createElement('div');
+            indicators.className = 'slide-indicators';
+            indicators.id = 'slideIndicators';
+            images.forEach((_, index) => {
+                const dot = document.createElement('span');
+                dot.className = 'slide-dot';
+                if (index === 0) dot.classList.add('active');
+                dot.onclick = () => goToSlide(index);
+                indicators.appendChild(dot);
+            });
+            slideshowContainer.appendChild(indicators);
 
             // Hide loading overlay quickly
             setTimeout(() => {
                 hideLoadingOverlay();
             }, 300);
+
+            // Start auto-play
+            startSlideshow();
         }
 
-        // Get responsive image path based on device and format support
-        function getResponsiveImagePath(imagePath) {
-            const pathParts = imagePath.split('.');
-            const extension = pathParts.pop();
-            const basePath = pathParts.join('.');
+        function changeSlide(direction) {
+            const previousSlide = currentSlide;
+            currentSlide = (currentSlide + direction + images.length) % images.length;
+            showSlide(currentSlide);
             
-            // Determine best size for device
-            let sizeSuffix = '';
-            if (screenWidth <= 800 || isMobileDevice) {
-                sizeSuffix = '-mobile';
-            } else if (screenWidth <= 1200 || isTablet) {
-                sizeSuffix = '-tablet';
-            }
+            // Preload next images
+            preloadAdjacentSlides(currentSlide);
             
-            // Prefer WebP if supported, fallback to original
-            if (supportsWebP) {
-                return `${basePath}${sizeSuffix}.webp`;
-            } else {
-                // For JPEG fallback, only mobile/tablet variants exist in WebP
-                // So we use original for all sizes
-                return imagePath;
+            // Reset auto-play timer
+            resetSlideshow();
+        }
+
+        function goToSlide(index) {
+            currentSlide = index;
+            showSlide(currentSlide);
+            preloadAdjacentSlides(currentSlide);
+            resetSlideshow();
+        }
+
+        function showSlide(index) {
+            // Hide all slides
+            slides.forEach((slide, i) => {
+                slide.classList.remove('active');
+                const dots = document.querySelectorAll('.slide-dot');
+                if (dots[i]) dots[i].classList.remove('active');
+            });
+            
+            // Show current slide
+            if (slides[index]) {
+                slides[index].classList.add('active');
+                const dots = document.querySelectorAll('.slide-dot');
+                if (dots[index]) dots[index].classList.add('active');
+                
+                // Load image if not loaded yet
+                const imagePath = slides[index].dataset.imagePath;
+                if (imagePath && slides[index].querySelector('.image-placeholder')) {
+                    loadImageToSlide(slides[index], imagePath, index);
+                }
             }
         }
-        
-        // Load image into single image container
-        function loadImageToContainer(container, imagePath, retryCount = 0) {
+
+        function preloadAdjacentSlides(index) {
+            // Preload next and previous slides
+            const nextIndex = (index + 1) % images.length;
+            const prevIndex = (index - 1 + images.length) % images.length;
+            
+            [nextIndex, prevIndex].forEach(i => {
+                if (slides[i]) {
+                    const imagePath = slides[i].dataset.imagePath;
+                    if (imagePath && slides[i].querySelector('.image-placeholder')) {
+                        loadImageToSlide(slides[i], imagePath, i);
+                    }
+                }
+            });
+        }
+
+        function startSlideshow() {
+            slideInterval = setInterval(() => {
+                changeSlide(1);
+            }, 5000); // Change slide every 5 seconds
+        }
+
+        function resetSlideshow() {
+            if (slideInterval) {
+                clearInterval(slideInterval);
+            }
+            startSlideshow();
+        }
+
+        function stopSlideshow() {
+            if (slideInterval) {
+                clearInterval(slideInterval);
+                slideInterval = null;
+            }
+        }
+
+        // Load image into slide
+        function loadImageToSlide(slide, imagePath, index, retryCount = 0) {
             const maxRetries = 2;
+            const placeholder = slide.querySelector('.image-placeholder');
+            if (!placeholder) return;
             
             // Use picture element for responsive images with WebP support
             const picture = document.createElement('picture');
@@ -1880,43 +1965,39 @@
             // Fallback img element (original JPEG)
             const img = document.createElement('img');
             img.src = imagePath;
-            img.alt = 'Ảnh sinh nhật';
-            img.style.cssText = `
-                max-width: 100%; max-height: 100%; width: auto; height: auto;
-                object-fit: contain; object-position: center;
-                opacity: 0; transition: opacity 0.5s ease;
-                border-radius: 12px; display: block; margin: auto;
-            `;
+            img.alt = `Ảnh sinh nhật ${index + 1}`;
             
             // Add loading attribute for browser-level lazy loading
-            img.loading = 'eager';
+            img.loading = index < 3 ? 'eager' : 'lazy';
             img.decoding = 'async';
             
+            // Append picture to DOM first to avoid race condition
+            picture.appendChild(img);
+            
             img.onload = function() {
-                // Fade in effect
-                requestAnimationFrame(() => {
-                    this.style.opacity = '1';
-                });
+                // Remove placeholder and add image
+                placeholder.remove();
+                slide.appendChild(picture);
             };
             
             img.onerror = function() {
                 if (retryCount < maxRetries - 1) {
                     // Retry with delay
                     setTimeout(() => {
-                        container.removeChild(picture);
-                        loadImageToContainer(container, imagePath, retryCount + 1);
+                        // Remove the failed picture element
+                        if (picture.parentNode) {
+                            picture.parentNode.removeChild(picture);
+                        }
+                        loadImageToSlide(slide, imagePath, index, retryCount + 1);
                     }, 500 * (retryCount + 1));
                 } else {
                     // Final failure - show error message
-                    const errorDiv = document.createElement('div');
-                    errorDiv.innerHTML = `
+                    placeholder.innerHTML = `
                         <div style="color: rgba(255,255,255,0.8); text-align: center; padding: 20px;">
                             <div style="font-size: 2rem; margin-bottom: 10px;">😢</div>
-                            <div style="font-size: 1rem;">Không thể tải ảnh</div>
-                            <div style="font-size: 0.8rem; opacity: 0.7; margin-top: 5px;">${imagePath}</div>
+                            <div style="font-size: 1rem;">Không thể tải ảnh ${index + 1}</div>
                         </div>
                     `;
-                    container.appendChild(errorDiv);
                 }
             };
             
@@ -1924,9 +2005,6 @@
             if (retryCount > 0) {
                 img.src = imagePath + `?retry=${retryCount}`;
             }
-            
-            picture.appendChild(img);
-            container.appendChild(picture);
         }
         // Loading overlay management
         function updateLoadingText(text) {
