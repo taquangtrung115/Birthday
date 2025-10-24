@@ -250,8 +250,8 @@
         .slideshow-container {
             position: relative;
             width: 100%;
-            height: 0;
-            padding-bottom: 62.5%; /* 16:10 aspect ratio */
+            min-height: 400px;
+            max-height: 60vh;
             border-radius: 24px;
             overflow: hidden;
             background: rgba(255, 255, 255, 0.12);
@@ -265,6 +265,9 @@
             animation: float 6s ease-in-out infinite, gentleGlow 4s ease-in-out infinite alternate;
             transform-style: preserve-3d;
             flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .slideshow-container::before {
@@ -331,79 +334,21 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* Enhanced Slideshow Styles with GPU Acceleration */
-        .slide {
-            position: absolute;
-            top: 0;
-            left: 0;
+        /* Single Image Display */
+        .single-image-container {
             width: 100%;
             height: 100%;
-            opacity: 0;
-            transform: translate3d(100%, 0, 0) scale3d(0.95, 0.95, 1);
-            transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), 
-                       opacity 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
-            border-radius: 20px;
-            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
+            border-radius: 20px;
+            overflow: hidden;
             background: linear-gradient(135deg, 
                 rgba(255, 255, 255, 0.1) 0%, 
                 rgba(255, 255, 255, 0.05) 100%);
-            will-change: transform, opacity;
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
-            box-sizing: border-box;
         }
 
-        .slide.active {
-            opacity: 1;
-            transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
-            z-index: 2;
-        }
-
-        .slide.prev {
-            transform: translate3d(-100%, 0, 0) scale3d(0.95, 0.95, 1);
-            opacity: 0;
-        }
-
-        .slide.next {
-            transform: translate3d(100%, 0, 0) scale3d(0.95, 0.95, 1);
-            opacity: 0;
-        }
-
-        /* Optimized slide transitions */
-        .slide.fade-in {
-            animation: smoothSlideIn 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
-        }
-
-        .slide.fade-out {
-            animation: smoothSlideOut 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
-        }
-
-        @keyframes smoothSlideIn {
-            0% {
-                opacity: 0;
-                transform: translate3d(0, 20px, 0) scale3d(0.98, 0.98, 1);
-            }
-            100% {
-                opacity: 1;
-                transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
-            }
-        }
-
-        @keyframes smoothSlideOut {
-            0% {
-                opacity: 1;
-                transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
-            }
-            100% {
-                opacity: 0;
-                transform: translate3d(0, -20px, 0) scale3d(0.98, 0.98, 1);
-            }
-        }
-
-        .slide img {
+        .single-image-container img {
             max-width: 100%;
             max-height: 100%;
             width: auto;
@@ -418,19 +363,13 @@
             will-change: transform;
             image-rendering: -webkit-optimize-contrast;
             image-rendering: crisp-edges;
-            /* Enable browser-level caching */
             image-orientation: from-image;
             display: block;
             margin: auto;
         }
 
-        .slide img:hover {
+        .single-image-container img:hover {
             transform: scale3d(1.02, 1.02, 1);
-        }
-
-        /* Optimize image loading */
-        .slide img[data-optimized] {
-            filter: brightness(1.02) contrast(1.05);
         }
 
         .image-placeholder {
@@ -581,7 +520,7 @@
             100% { opacity: 1; }
         }
 
-        /* Responsive breakpoints for slideshow */
+        /* Responsive breakpoints for image container */
         @media screen and (max-width: 768px) {
             .slideshow-wrapper {
                 max-width: 95vw;
@@ -590,11 +529,8 @@
             }
             
             .slideshow-container {
-                padding-bottom: 75%; /* More square aspect ratio on mobile */
-                border-radius: 16px;
-            }
-            
-            .slide {
+                min-height: 300px;
+                max-height: 50vh;
                 border-radius: 16px;
             }
         }
@@ -607,15 +543,12 @@
             }
             
             .slideshow-container {
-                padding-bottom: 80%;
+                min-height: 250px;
+                max-height: 45vh;
                 border-radius: 12px;
             }
             
-            .slide {
-                border-radius: 12px;
-            }
-            
-            .slide img {
+            .single-image-container img {
                 border-radius: 8px;
             }
         }
@@ -626,7 +559,8 @@
             }
             
             .slideshow-container {
-                padding-bottom: 56.25%; /* 16:9 on desktop */
+                min-height: 500px;
+                max-height: 65vh;
             }
         }
 
@@ -641,20 +575,6 @@
                 transform: translateY(-5px) rotateX(-3deg) rotateY(-2deg); 
             }
         }
-
-        .slide {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            transition: opacity 1s ease-in-out;
-        }
-
-        .slide.active {
-            opacity: 1;
-        }
-
-
 
         /* Image loading optimization */
         .image-placeholder {
@@ -1669,25 +1589,6 @@
                         </div>
                     </div>
                 </div>
-                
-                <!-- Navigation Controls -->
-                <button class="slide-nav prev" id="prevBtn" onclick="prevSlide()">
-                    ❮
-                </button>
-                
-                <button class="slide-nav next" id="nextBtn" onclick="nextSlideManual()">
-                    ❯
-                </button>
-                
-                <!-- Slide Indicators -->
-                <div class="slide-indicators" id="slideIndicators">
-                    <!-- Dots sẽ được tạo bởi JavaScript -->
-                </div>
-                
-                <!-- Progress Bar -->
-                <div class="slide-progress" id="slideProgress">
-                    <div class="slide-progress-bar" id="slideProgressBar"></div>
-                </div>
             </div>
             
             <div class="birthday-message">
@@ -1718,10 +1619,6 @@
     <script>
         // === OPTIMIZED IMAGE LOADING SYSTEM ===
         let images = [];
-        let currentSlide = 0;
-        
-        // In-memory cache for loaded images
-        const imageCache = new Map();
         
         // Detect WebP support
         let supportsWebP = false;
@@ -1834,24 +1731,18 @@
             'received_345382977611525.jpeg'
         ];
         
-        // Initialize all images immediately - they exist in the Image folder
-        images = possibleImages.map(img => `Image/${img}`);
+        // Select a single image (first one or random)
+        const selectedImage = `Image/${possibleImages[0]}`;
+        images = [selectedImage];
 
         // Optimized - fast image precheck (optional, all images should exist)
         function checkImageExists(imagePath) {
             return new Promise((resolve) => {
-                // Check cache first
-                if (imageCache.has(imagePath)) {
-                    resolve(true);
-                    return;
-                }
-                
                 const img = new Image();
                 const timeout = setTimeout(() => resolve(false), 400);
                 
                 img.onload = () => {
                     clearTimeout(timeout);
-                    imageCache.set(imagePath, img);
                     resolve(true);
                 };
                 
@@ -1888,14 +1779,14 @@
             });
         }
 
-        // Tạo slideshow với lazy loading OPTIMIZED
+        // Tạo single image display với lazy loading OPTIMIZED
         function createSlideshow() {
             const slideshowContainer = document.getElementById('slideshow');
             
             if (images.length === 0) {
                 // Hiển thị thông báo
                 const noImageSlide = document.createElement('div');
-                noImageSlide.className = 'slide active';
+                noImageSlide.className = 'single-image-container';
                 noImageSlide.innerHTML = `
                     <div style="display: flex; justify-content: center; align-items: center; height: 100%; 
                                background: linear-gradient(45deg, #ff6b6b, #4ecdc4); color: white; 
@@ -1912,58 +1803,19 @@
                 return;
             }
             
-            // OPTIMIZED: Tạo slides với lazy loading và IntersectionObserver
-            images.forEach((imagePath, index) => {
-                const slide = document.createElement('div');
-                slide.className = 'slide';
-                slide.dataset.imagePath = imagePath;
-                slide.dataset.imageIndex = index;
-                
-                if (index === 0) {
-                    // Load first image immediately for instant display
-                    slide.classList.add('active');
-                    loadImageToSlide(slide, imagePath, index);
-                } else if (index <= 2) {
-                    // Preload next 2 images with slight delay (non-blocking)
-                    setTimeout(() => {
-                        loadImageToSlide(slide, imagePath, index);
-                    }, 100 + (index * 100));
-                } else {
-                    // Other images: add placeholder and observe
-                    const placeholder = document.createElement('div');
-                    placeholder.className = 'image-placeholder';
-                    placeholder.innerHTML = `
-                        <div class="loading-spinner"></div>
-                        <div class="image-skeleton"></div>
-                        <div style="margin-top: 15px; font-size: 0.9rem; opacity: 0.8;">
-                            📸 Đang tải...
-                        </div>
-                    `;
-                    slide.appendChild(placeholder);
-                    
-                    // Observe for lazy loading
-                    if (imageObserver) {
-                        imageObserver.observe(slide);
-                    }
-                }
-                
-                slideshowContainer.appendChild(slide);
-            });
+            // Create single image container
+            const imageContainer = document.createElement('div');
+            imageContainer.className = 'single-image-container';
+            
+            const imagePath = images[0];
+            loadImageToContainer(imageContainer, imagePath);
+            
+            slideshowContainer.appendChild(imageContainer);
 
             // Hide loading overlay quickly
             setTimeout(() => {
                 hideLoadingOverlay();
             }, 300);
-            
-            // Create indicators
-            setTimeout(() => {
-                createSlideIndicators();
-            }, 400);
-            
-            // Start background preloading of remaining images
-            setTimeout(() => {
-                preloadNextImages();
-            }, 800);
         }
 
         // Get responsive image path based on device and format support
@@ -1990,29 +1842,8 @@
             }
         }
         
-        // OPTIMIZED: Load ảnh vào slide với responsive images và WebP support
-        function loadImageToSlide(slide, imagePath, index, retryCount = 0) {
-            const cacheKey = imagePath + (supportsWebP ? '-webp' : '') + `-${screenWidth}`;
-            
-            // Check if image is already cached
-            if (imageCache.has(cacheKey)) {
-                const cachedImg = imageCache.get(cacheKey).cloneNode();
-                cachedImg.style.cssText = `
-                    max-width: 100%; max-height: 100%; width: auto; height: auto;
-                    object-fit: contain; object-position: center;
-                    opacity: 1; border-radius: 12px; display: block; margin: auto;
-                `;
-                cachedImg.alt = `Ảnh sinh nhật ${index + 1}`;
-                
-                // Remove placeholder
-                const placeholder = slide.querySelector('.image-placeholder');
-                if (placeholder) placeholder.remove();
-                
-                slide.appendChild(cachedImg);
-                slide.classList.add('image-loaded');
-                return;
-            }
-            
+        // Load image into single image container
+        function loadImageToContainer(container, imagePath, retryCount = 0) {
             const maxRetries = 2;
             
             // Use picture element for responsive images with WebP support
@@ -2049,43 +1880,31 @@
             // Fallback img element (original JPEG)
             const img = document.createElement('img');
             img.src = imagePath;
-            img.alt = `Ảnh sinh nhật ${index + 1}`;
+            img.alt = 'Ảnh sinh nhật';
             img.style.cssText = `
                 max-width: 100%; max-height: 100%; width: auto; height: auto;
                 object-fit: contain; object-position: center;
-                opacity: 0; transition: opacity 0.3s ease;
+                opacity: 0; transition: opacity 0.5s ease;
                 border-radius: 12px; display: block; margin: auto;
             `;
             
             // Add loading attribute for browser-level lazy loading
-            img.loading = 'lazy';
+            img.loading = 'eager';
             img.decoding = 'async';
             
             img.onload = function() {
-                // Cache the loaded image
-                imageCache.set(cacheKey, this.cloneNode());
-                
                 // Fade in effect
                 requestAnimationFrame(() => {
                     this.style.opacity = '1';
                 });
-                
-                // Remove placeholder if exists
-                const placeholder = slide.querySelector('.image-placeholder');
-                if (placeholder) {
-                    placeholder.style.opacity = '0';
-                    setTimeout(() => placeholder.remove(), 300);
-                }
-                
-                slide.classList.add('image-loaded');
             };
             
             img.onerror = function() {
                 if (retryCount < maxRetries - 1) {
                     // Retry with delay
                     setTimeout(() => {
-                        slide.removeChild(picture);
-                        loadImageToSlide(slide, imagePath, index, retryCount + 1);
+                        container.removeChild(picture);
+                        loadImageToContainer(container, imagePath, retryCount + 1);
                     }, 500 * (retryCount + 1));
                 } else {
                     // Final failure - show error message
@@ -2097,10 +1916,7 @@
                             <div style="font-size: 0.8rem; opacity: 0.7; margin-top: 5px;">${imagePath}</div>
                         </div>
                     `;
-                    
-                    const placeholder = slide.querySelector('.image-placeholder');
-                    if (placeholder) placeholder.remove();
-                    slide.appendChild(errorDiv);
+                    container.appendChild(errorDiv);
                 }
             };
             
@@ -2110,9 +1926,8 @@
             }
             
             picture.appendChild(img);
-            slide.appendChild(picture);
+            container.appendChild(picture);
         }
-
         // Loading overlay management
         function updateLoadingText(text) {
             const loadingText = document.getElementById('loadingText');
@@ -2137,195 +1952,6 @@
                 loadingOverlay.style.display = 'flex';
                 loadingOverlay.classList.remove('hidden');
                 updateLoadingText(text);
-            }
-        }
-
-        // Preload các ảnh tiếp theo
-        function preloadNextImages() {
-            const currentIndex = currentSlide;
-            const preloadCount = Math.min(3, images.length);
-            
-            for (let i = 1; i <= preloadCount; i++) {
-                const nextIndex = (currentIndex + i) % images.length;
-                const slide = document.querySelector(`[data-image-index="${nextIndex}"]`);
-                
-                if (slide && slide.querySelector('.image-placeholder')) {
-                    const imagePath = slide.dataset.imagePath;
-                    setTimeout(() => {
-                        loadImageToSlide(slide, imagePath, nextIndex);
-                    }, i * 500); // Stagger loading
-                }
-            }
-        }
-
-        // Chuyển slide với preloading thông minh
-        // Navigation functions
-        function updateSlideIndicators() {
-            const dots = document.querySelectorAll('.slide-dot');
-            dots.forEach((dot, index) => {
-                dot.classList.toggle('active', index === currentSlide);
-            });
-            
-            // Update progress bar
-            updateProgressBar();
-        }
-
-        function updateProgressBar() {
-            const slides = document.querySelectorAll('.slide');
-            const progressBar = document.getElementById('slideProgressBar');
-            
-            if (slides.length > 0 && progressBar) {
-                const progress = ((currentSlide + 1) / slides.length) * 100;
-                progressBar.style.width = `${progress}%`;
-            }
-        }
-
-        function goToSlide(slideIndex) {
-            const slides = document.querySelectorAll('.slide');
-            if (slides.length === 0 || slideIndex === currentSlide) return;
-            
-            const currentSlideEl = slides[currentSlide];
-            const newSlideEl = slides[slideIndex];
-            
-            // Optimized smooth transition
-            currentSlideEl.classList.add('fade-out');
-            
-            // Use requestAnimationFrame for smoother transitions
-            requestAnimationFrame(() => {
-                setTimeout(() => {
-                    currentSlideEl.classList.remove('active', 'fade-out');
-                    currentSlide = slideIndex;
-                    newSlideEl.classList.add('active', 'fade-in');
-                    
-                    // Remove transition class after animation
-                    setTimeout(() => {
-                        newSlideEl.classList.remove('fade-in');
-                    }, 600);
-                    
-                    updateSlideIndicators();
-                    
-                    // Lazy load current image if needed
-                    if (newSlideEl.querySelector('.image-placeholder')) {
-                        const imagePath = newSlideEl.dataset.imagePath;
-                        const index = newSlideEl.dataset.imageIndex;
-                        loadImageToSlide(newSlideEl, imagePath, parseInt(index));
-                    }
-                    
-                    // Smart preloading - only preload next 2 images
-                    for (let i = 1; i <= 2; i++) {
-                        const nextIndex = (currentSlide + i) % slides.length;
-                        const nextSlideEl = slides[nextIndex];
-                        if (nextSlideEl && nextSlideEl.querySelector('.image-placeholder')) {
-                            const imagePath = nextSlideEl.dataset.imagePath;
-                            const index = nextSlideEl.dataset.imageIndex;
-                            setTimeout(() => {
-                                loadImageToSlide(nextSlideEl, imagePath, parseInt(index));
-                            }, i * 300); // Stagger loading
-                        }
-                    }
-                }, 100);
-            });
-        }
-
-        function nextSlide() {
-            const slides = document.querySelectorAll('.slide');
-            if (slides.length === 0) return;
-            
-            const nextIndex = (currentSlide + 1) % slides.length;
-            goToSlide(nextIndex);
-        }
-
-        function nextSlideManual() {
-            nextSlide();
-            // Pause auto-advance briefly when user manually navigates
-            pauseAutoAdvance();
-        }
-
-        function prevSlide() {
-            const slides = document.querySelectorAll('.slide');
-            if (slides.length === 0) return;
-            
-            const prevIndex = (currentSlide - 1 + slides.length) % slides.length;
-            goToSlide(prevIndex);
-            // Pause auto-advance briefly when user manually navigates
-            pauseAutoAdvance();
-        }
-
-        // Auto-advance control
-        let autoAdvanceInterval = null;
-        let isPaused = false;
-
-        function startAutoAdvance() {
-            const slides = document.querySelectorAll('.slide');
-            if (slides.length <= 1) return;
-            
-            if (autoAdvanceInterval) clearInterval(autoAdvanceInterval);
-            autoAdvanceInterval = setInterval(() => {
-                if (!isPaused) {
-                    nextSlide();
-                }
-            }, 4000);
-        }
-
-        function pauseAutoAdvance() {
-            isPaused = true;
-            setTimeout(() => {
-                isPaused = false;
-            }, 8000); // Resume after 8 seconds
-        }
-
-
-
-        function createSlideIndicators() {
-            const slides = document.querySelectorAll('.slide');
-            const indicatorsContainer = document.getElementById('slideIndicators');
-            
-            if (!indicatorsContainer || slides.length <= 1) return;
-            
-            indicatorsContainer.innerHTML = '';
-            
-            slides.forEach((_, index) => {
-                const dot = document.createElement('div');
-                dot.className = 'slide-dot';
-                if (index === currentSlide) {
-                    dot.classList.add('active');
-                }
-                
-                dot.addEventListener('click', () => {
-                    goToSlide(index);
-                    pauseAutoAdvance();
-                });
-                
-                indicatorsContainer.appendChild(dot);
-            });
-        }
-
-        function nextSlideOld() {
-            const slides = document.querySelectorAll('.slide');
-            if (slides.length === 0) return;
-            
-            slides[currentSlide].classList.remove('active');
-            
-            currentSlide = (currentSlide + 1) % slides.length;
-            const activeSlide = slides[currentSlide];
-            activeSlide.classList.add('active');
-            
-            // Load ảnh hiện tại nếu chưa load
-            if (activeSlide.querySelector('.image-placeholder')) {
-                const imagePath = activeSlide.dataset.imagePath;
-                const index = activeSlide.dataset.imageIndex;
-                loadImageToSlide(activeSlide, imagePath, parseInt(index));
-            }
-            
-            // Preload ảnh tiếp theo
-            const nextIndex = (currentSlide + 1) % slides.length;
-            const nextSlide = slides[nextIndex];
-            if (nextSlide && nextSlide.querySelector('.image-placeholder')) {
-                const imagePath = nextSlide.dataset.imagePath;
-                const index = nextSlide.dataset.imageIndex;
-                setTimeout(() => {
-                    loadImageToSlide(nextSlide, imagePath, parseInt(index));
-                }, 200);
             }
         }
 
@@ -2683,116 +2309,6 @@
             playBeep();
         }
 
-        // Touch/Swipe Support
-        function addTouchSupport() {
-            const slideshow = document.getElementById('slideshow');
-            if (!slideshow) return;
-
-            let startX = 0;
-            let startY = 0;
-            let currentX = 0;
-            let currentY = 0;
-            let isDragging = false;
-
-            // Touch events
-            slideshow.addEventListener('touchstart', (e) => {
-                startX = e.touches[0].clientX;
-                startY = e.touches[0].clientY;
-                isDragging = true;
-                slideshow.style.cursor = 'grabbing';
-            });
-
-            slideshow.addEventListener('touchmove', (e) => {
-                if (!isDragging) return;
-                
-                currentX = e.touches[0].clientX;
-                currentY = e.touches[0].clientY;
-                
-                // Prevent default scrolling if horizontal swipe
-                const diffX = Math.abs(currentX - startX);
-                const diffY = Math.abs(currentY - startY);
-                
-                if (diffX > diffY) {
-                    e.preventDefault();
-                }
-            });
-
-            slideshow.addEventListener('touchend', (e) => {
-                if (!isDragging) return;
-                
-                isDragging = false;
-                slideshow.style.cursor = 'grab';
-                
-                const diffX = currentX - startX;
-                const diffY = currentY - startY;
-                
-                // Only trigger if horizontal swipe is dominant and significant
-                if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
-                    if (diffX > 0) {
-                        // Swipe right - previous slide
-                        prevSlide();
-                    } else {
-                        // Swipe left - next slide  
-                        nextSlideManual();
-                    }
-                }
-            });
-
-            // Mouse events for desktop
-            slideshow.addEventListener('mousedown', (e) => {
-                startX = e.clientX;
-                startY = e.clientY;
-                isDragging = true;
-                slideshow.style.cursor = 'grabbing';
-                e.preventDefault();
-            });
-
-            slideshow.addEventListener('mousemove', (e) => {
-                if (!isDragging) return;
-                
-                currentX = e.clientX;
-                currentY = e.clientY;
-            });
-
-            slideshow.addEventListener('mouseup', (e) => {
-                if (!isDragging) return;
-                
-                isDragging = false;
-                slideshow.style.cursor = 'grab';
-                
-                const diffX = currentX - startX;
-                const diffY = currentY - startY;
-                
-                // Only trigger if horizontal swipe is dominant and significant
-                if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 30) {
-                    if (diffX > 0) {
-                        // Drag right - previous slide
-                        prevSlide();
-                    } else {
-                        // Drag left - next slide
-                        nextSlideManual();
-                    }
-                }
-            });
-
-            slideshow.addEventListener('mouseleave', () => {
-                isDragging = false;
-                slideshow.style.cursor = 'grab';
-            });
-
-            // Keyboard support
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'ArrowLeft') {
-                    prevSlide();
-                } else if (e.key === 'ArrowRight') {
-                    nextSlideManual();
-                }
-            });
-
-            // Set initial cursor
-            slideshow.style.cursor = 'grab';
-        }
-
         // OPTIMIZED: Khởi tạo nhanh với instant loading - defer heavy animations
         window.addEventListener('DOMContentLoaded', function() {
             // Show connection info to user if slow
@@ -2805,36 +2321,12 @@
                 updateLoadingText('🎨 Đang tải ảnh...');
             }
             
-            // Create slideshow immediately on DOM ready (before all resources load)
+            // Create single image display immediately on DOM ready (before all resources load)
             showLoadingOverlay();
             createSlideshow();
-            
-            // Start slideshow features
-            if (images.length > 1) {
-                createSlideIndicators();
-                addTouchSupport();
-            }
         });
         
         window.addEventListener('load', async function() {
-            // Initialize canvas and animations after page load
-            resizeCanvas();
-            animate();
-            
-            // Start auto-advance after page is ready
-            if (images.length > 1) {
-                startAutoAdvance();
-            }
-            
-            // Defer heavy effects to not block page load
-            setTimeout(() => {
-                for (let i = 0; i < 2; i++) {
-                    setTimeout(createFirework, i * 300);
-                }
-            }, 500);
-            
-            // Bắt đầu animation pháo hoa
-            animate();
             
             // Mobile performance optimization
             const isMobile = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -3106,100 +2598,6 @@
         document.addEventListener('touchstart', function(e) {
             const touch = e.touches[0];
             handlePointerMove(touch.clientX, touch.clientY);
-        });
-
-        // Swipe gesture for slideshow navigation
-        let touchStartX = 0;
-        let touchStartY = 0;
-        const slideshow = document.getElementById('slideshow');
-
-        slideshow.addEventListener('touchstart', function(e) {
-            touchStartX = e.touches[0].clientX;
-            touchStartY = e.touches[0].clientY;
-        });
-
-        slideshow.addEventListener('touchend', function(e) {
-            const touchEndX = e.changedTouches[0].clientX;
-            const touchEndY = e.changedTouches[0].clientY;
-            const deltaX = touchEndX - touchStartX;
-            const deltaY = touchEndY - touchStartY;
-
-            // Check if it's a horizontal swipe (not vertical scroll)
-            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
-                if (deltaX > 0) {
-                    // Swipe right - previous slide (create some sparkles)
-                    prevSlide();
-                    createSparkles();
-                } else {
-                    // Swipe left - next slide (create some hearts)
-                    nextSlide();
-                    createHearts();
-                }
-                
-                // Pause auto-advance when user interacts
-                pauseAutoAdvance();
-                
-                // Visual feedback for swipe
-                const slideshowEl = document.getElementById('slideshow');
-                slideshowEl.style.transform = 'scale(0.98)';
-                setTimeout(() => {
-                    slideshowEl.style.transform = '';
-                }, 150);
-            } else if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 80) {
-                // Vertical swipe for slide navigation  
-                if (deltaY > 0) {
-                    // Swipe down - next slide
-                    nextSlide();
-                    pauseAutoAdvance();
-                } else {
-                    // Swipe up - previous slide
-                    prevSlide();
-                    pauseAutoAdvance();
-                }
-            }
-        });
-
-        // Keyboard navigation support
-        document.addEventListener('keydown', (e) => {
-            switch(e.key) {
-                case 'ArrowLeft':
-                    e.preventDefault();
-                    prevSlide();
-                    pauseAutoAdvance();
-                    break;
-                case 'ArrowRight':
-                    e.preventDefault();
-                    nextSlide();
-                    pauseAutoAdvance();
-                    break;
-                case ' ': // Spacebar
-                    e.preventDefault();
-                    nextSlide();
-                    pauseAutoAdvance();
-                    break;
-
-            }
-        });
-
-        // Mouse wheel scroll support
-        let scrollTimeout;
-        
-        document.getElementById('slideshow').addEventListener('wheel', (e) => {
-            e.preventDefault();
-            
-            // Debounce scroll events
-            clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(() => {
-                if (e.deltaY > 0) {
-                    // Scroll down = next slide
-                    nextSlide();
-                    pauseAutoAdvance();
-                } else if (e.deltaY < 0) {
-                    // Scroll up = previous slide
-                    prevSlide();
-                    pauseAutoAdvance();
-                }
-            }, 50);
         });
 
         // Tạo pháo hoa ngẫu nhiên mạnh mẽ hơn khi trang được tải
