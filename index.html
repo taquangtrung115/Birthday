@@ -1203,31 +1203,6 @@
         .slide-nav.next {
             right: 10px;
         }
-
-        /* Progress Bar Styles */
-        .slide-progress {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 0 0 20px 20px;
-            overflow: hidden;
-        }
-
-        .slide-progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, 
-                #ff6b6b 0%, 
-                #4ecdc4 25%, 
-                #45b7d1 50%, 
-                #96ceb4 75%, 
-                #feca57 100%);
-            width: 0%;
-            transition: width 0.3s ease;
-            border-radius: 0 0 20px 0;
-        }            .slide-indicators {
                 bottom: -35px;
             }
 
@@ -1865,12 +1840,6 @@
             });
             slideshowContainer.appendChild(indicators);
 
-            // Add progress bar
-            const progressBar = document.createElement('div');
-            progressBar.className = 'slide-progress';
-            progressBar.innerHTML = '<div class="slide-progress-bar" id="slideProgressBar"></div>';
-            slideshowContainer.appendChild(progressBar);
-
             // Hide loading overlay quickly
             setTimeout(() => {
                 hideLoadingOverlay();
@@ -2002,6 +1971,9 @@
             img.loading = index < 3 ? 'eager' : 'lazy';
             img.decoding = 'async';
             
+            // Append picture to DOM first to avoid race condition
+            picture.appendChild(img);
+            
             img.onload = function() {
                 // Remove placeholder and add image
                 placeholder.remove();
@@ -2012,6 +1984,10 @@
                 if (retryCount < maxRetries - 1) {
                     // Retry with delay
                     setTimeout(() => {
+                        // Remove the failed picture element
+                        if (picture.parentNode) {
+                            picture.parentNode.removeChild(picture);
+                        }
                         loadImageToSlide(slide, imagePath, index, retryCount + 1);
                     }, 500 * (retryCount + 1));
                 } else {
@@ -2029,8 +2005,6 @@
             if (retryCount > 0) {
                 img.src = imagePath + `?retry=${retryCount}`;
             }
-            
-            picture.appendChild(img);
         }
         // Loading overlay management
         function updateLoadingText(text) {
