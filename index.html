@@ -1619,10 +1619,6 @@
     <script>
         // === OPTIMIZED IMAGE LOADING SYSTEM ===
         let images = [];
-        let currentSlide = 0;
-        
-        // In-memory cache for loaded images
-        const imageCache = new Map();
         
         // Detect WebP support
         let supportsWebP = false;
@@ -1742,18 +1738,11 @@
         // Optimized - fast image precheck (optional, all images should exist)
         function checkImageExists(imagePath) {
             return new Promise((resolve) => {
-                // Check cache first
-                if (imageCache.has(imagePath)) {
-                    resolve(true);
-                    return;
-                }
-                
                 const img = new Image();
                 const timeout = setTimeout(() => resolve(false), 400);
                 
                 img.onload = () => {
                     clearTimeout(timeout);
-                    imageCache.set(imagePath, img);
                     resolve(true);
                 };
                 
